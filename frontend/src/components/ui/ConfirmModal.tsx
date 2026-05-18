@@ -2,7 +2,7 @@ import { AlertTriangle, CheckCircle2, X, Eye, EyeOff, Loader2 } from 'lucide-rea
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useAuth } from '@/hooks/useAuth'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/services/supabase'
 
 interface ConfirmModalProps {
   isOpen: boolean
