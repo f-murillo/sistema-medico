@@ -4,10 +4,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { doctorService } from '@/services/doctorService'
 import type { Medico } from '@/services/doctorService'
-import { User, Stethoscope, IdCard, Save, Loader2, CheckCircle, ArrowLeft } from 'lucide-react'
+import { User, Stethoscope, IdCard, Save, Loader2, ArrowLeft, Lock, Mail, KeyRound } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { useAuth } from '@/context/AuthContext'
+import { supabase } from '@/services/supabase'
 
 const profileSchema = z.object({
   nombre_completo: z.string().min(3, 'El nombre es demasiado corto'),
@@ -19,6 +21,14 @@ type ProfileForm = z.infer<typeof profileSchema>
 
 export default function Profile() {
   const queryClient = useQueryClient()
+  const { user } = useAuth()
+  
+  // States for credentials
+  const [newEmail, setNewEmail] = useState('')
+  const [emailLoading, setEmailLoading] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordLoading, setPasswordLoading] = useState(false)
   
   const { data: profile, isLoading } = useQuery({
     queryKey: ['doctor-profile'],
@@ -54,6 +64,55 @@ export default function Profile() {
     updateMutation.mutate(data)
   }
 
+  // Handle email update via Supabase
+  const handleUpdateEmail = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newEmail.trim()) {
+      toast.error('El nuevo correo electrónico no puede estar vacío.')
+      return
+    }
+    setEmailLoading(true)
+    try {
+      const { error } = await supabase.auth.updateUser({ email: newEmail.trim() })
+      if (error) throw error
+      toast.success('¡Enlace enviado! Revisa tu bandeja de entrada en el nuevo correo para confirmar el cambio.')
+      setNewEmail('')
+    } catch (err: any) {
+      toast.error(err.message || 'Error al actualizar el correo electrónico')
+    } finally {
+      setEmailLoading(false)
+    }
+  }
+
+  // Handle password update via Supabase
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newPassword.trim()) {
+      toast.error('La contraseña no puede estar vacía.')
+      return
+    }
+    if (newPassword.length < 6) {
+      toast.error('La nueva contraseña debe tener al menos 6 caracteres.')
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error('Las contraseñas no coinciden.')
+      return
+    }
+    setPasswordLoading(true)
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword })
+      if (error) throw error
+      toast.success('¡Contraseña actualizada correctamente!')
+      setNewPassword('')
+      setConfirmPassword('')
+    } catch (err: any) {
+      toast.error(err.message || 'Error al actualizar la contraseña')
+    } finally {
+      setPasswordLoading(false)
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -61,6 +120,13 @@ export default function Profile() {
       </div>
     )
   }
+
+  const initials = profile?.nombre_completo
+    ?.split(' ')
+    ?.map((n) => n[0])
+    ?.join('')
+    ?.toUpperCase()
+    ?.slice(0, 2) || 'M'
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -79,29 +145,40 @@ export default function Profile() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Card de Visualización */}
         <div className="md:col-span-1 space-y-6">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden text-center p-8">
-            <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center text-4xl font-bold text-primary mx-auto mb-4">
-              {profile?.nombre_completo.split(' ').map(n => n[0]).join('')}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden text-center p-8 sticky top-6">
+            <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center text-4xl font-bold text-primary mx-auto mb-4 shadow-inner">
+              {initials}
             </div>
-            <h3 className="font-bold text-xl text-slate-900">{profile?.nombre_completo}</h3>
-            <p className="text-primary font-medium">{profile?.especialidad || 'Especialidad no definida'}</p>
-            
+            <h3 className="font-bold text-xl text-slate-900 line-clamp-2">{profile?.nombre_completo}</h3>
+            <p className="text-primary font-medium text-sm mt-1">{profile?.especialidad || 'Especialidad no definida'}</p>
+            <div className="mt-4 pt-4 border-t border-slate-100 text-left space-y-2 text-xs text-slate-500">
+              <p><strong>Cédula:</strong> {profile?.cedula_profesional || 'No especificada'}</p>
+              <p className="break-all"><strong>Correo:</strong> {user?.email || 'No disponible'}</p>
+            </div>
           </div>
         </div>
 
-        {/* Formulario de Edición */}
-        <div className="md:col-span-2">
+        {/* Formularios de Edición e Inicio de Sesión */}
+        <div className="md:col-span-2 space-y-8">
+          {/* Card 1: Datos Profesionales */}
           <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 space-y-6">
-            <div className="grid grid-cols-1 gap-6">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <User className="w-5 h-5 text-primary" />
+                Datos Profesionales
+              </h3>
+              <p className="text-xs text-slate-500">Tu información básica pública expuesta a los pacientes</p>
+            </div>
+
+            <div className="pt-6 border-t border-slate-100 grid grid-cols-1 gap-6">
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
-                  <User className="w-4 h-4 text-primary" />
                   Nombre Completo
                 </label>
                 <input
                   {...register('nombre_completo')}
                   type="text"
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-800"
                   placeholder="Dr. Nombre Apellido"
                 />
                 {errors.nombre_completo && <p className="text-xs text-red-500 mt-1">{errors.nombre_completo.message}</p>}
@@ -109,13 +186,12 @@ export default function Profile() {
 
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
-                  <Stethoscope className="w-4 h-4 text-primary" />
                   Especialidad Médica
                 </label>
                 <input
                   {...register('especialidad')}
                   type="text"
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-800"
                   placeholder="Ej: Cardiología, Pediatría, etc."
                 />
                 {errors.especialidad && <p className="text-xs text-red-500 mt-1">{errors.especialidad.message}</p>}
@@ -123,13 +199,12 @@ export default function Profile() {
 
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
-                  <IdCard className="w-4 h-4 text-primary" />
                   Cédula Profesional / ID Médico
                 </label>
                 <input
                   {...register('cedula_profesional')}
                   type="text"
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-800"
                   placeholder="Nº de Cédula o Registro Profesional"
                 />
                 {errors.cedula_profesional && <p className="text-xs text-red-500 mt-1">{errors.cedula_profesional.message}</p>}
@@ -140,7 +215,7 @@ export default function Profile() {
               <button
                 type="submit"
                 disabled={updateMutation.isPending}
-                className="flex items-center gap-2 px-8 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all shadow-md active:scale-95 disabled:opacity-50"
+                className="flex items-center gap-2 px-8 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all shadow-md active:scale-95 disabled:opacity-50 hover:cursor-pointer"
               >
                 {updateMutation.isPending ? (
                   <>
@@ -150,12 +225,128 @@ export default function Profile() {
                 ) : (
                   <>
                     <Save className="w-5 h-5" />
-                    Guardar Perfil
+                    Guardar Datos
                   </>
                 )}
               </button>
             </div>
           </form>
+
+          {/* Card 2: Credenciales de Acceso */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 space-y-6">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <Lock className="w-5 h-5 text-primary" />
+                Credenciales de Acceso
+              </h3>
+              <p className="text-xs text-slate-500">Gestiona tu correo de ingreso y actualiza tu contraseña de seguridad</p>
+            </div>
+
+            <div className="pt-6 border-t border-slate-100 space-y-8">
+              {/* Sección 1: Cambiar Correo */}
+              <form onSubmit={handleUpdateEmail} className="space-y-4">
+                <h4 className="font-bold text-sm text-slate-800 flex items-center gap-2">
+                  <Mail className="w-4.5 h-4.5 text-primary" />
+                  Cambiar Correo Electrónico
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">
+                      Correo Actual
+                    </label>
+                    <input
+                      type="email"
+                      disabled
+                      value={user?.email || ''}
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-500 cursor-not-allowed"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">
+                      Nuevo Correo Electrónico
+                    </label>
+                    <input
+                      type="email"
+                      value={newEmail}
+                      onChange={(e) => setNewEmail(e.target.value)}
+                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-800"
+                      placeholder="nuevo@correo.com"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end pt-2">
+                  <button
+                    type="submit"
+                    disabled={emailLoading}
+                    className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 transition-all shadow-md active:scale-95 disabled:opacity-50 hover:cursor-pointer"
+                  >
+                    {emailLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Actualizando Correo...
+                      </>
+                    ) : (
+                      <>
+                        Actualizar Correo
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+
+              {/* Sección 2: Cambiar Contraseña */}
+              <form onSubmit={handleUpdatePassword} className="space-y-4 pt-6 border-t border-slate-100">
+                <h4 className="font-bold text-sm text-slate-800 flex items-center gap-2">
+                  <KeyRound className="w-4.5 h-4.5 text-primary" />
+                  Cambiar Contraseña
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">
+                      Nueva Contraseña
+                    </label>
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-800"
+                      placeholder="Mínimo 6 caracteres"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">
+                      Confirmar Nueva Contraseña
+                    </label>
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-800"
+                      placeholder="Confirmar contraseña"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end pt-2">
+                  <button
+                    type="submit"
+                    disabled={passwordLoading}
+                    className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 transition-all shadow-md active:scale-95 disabled:opacity-50 hover:cursor-pointer"
+                  >
+                    {passwordLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Actualizando Contraseña...
+                      </>
+                    ) : (
+                      <>
+                        Actualizar Contraseña
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
       </div>
     </div>
