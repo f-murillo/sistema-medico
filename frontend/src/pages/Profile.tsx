@@ -26,6 +26,7 @@ export default function Profile() {
   // States for credentials
   const [newEmail, setNewEmail] = useState('')
   const [emailLoading, setEmailLoading] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [passwordLoading, setPasswordLoading] = useState(false)
@@ -84,11 +85,15 @@ export default function Profile() {
     }
   }
 
-  // Handle password update via Supabase
+  // Handle password update via Supabase (Requires current password verification)
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!currentPassword.trim()) {
+      toast.error('Debes ingresar tu contraseña actual por motivos de seguridad.')
+      return
+    }
     if (!newPassword.trim()) {
-      toast.error('La contraseña no puede estar vacía.')
+      toast.error('La nueva contraseña no puede estar vacía.')
       return
     }
     if (newPassword.length < 6) {
@@ -96,14 +101,30 @@ export default function Profile() {
       return
     }
     if (newPassword !== confirmPassword) {
-      toast.error('Las contraseñas no coinciden.')
+      toast.error('Las contraseñas nuevas no coinciden.')
       return
     }
+    
     setPasswordLoading(true)
     try {
+      // 1. Re-autenticar al médico con su contraseña actual
+      if (!user?.email) throw new Error('No se pudo identificar el correo de tu sesión.')
+      
+      const { error: reAuthError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword
+      })
+
+      if (reAuthError) {
+        throw new Error('La contraseña actual ingresada es incorrecta.')
+      }
+
+      // 2. Si es exitoso, cambiar la contraseña
       const { error } = await supabase.auth.updateUser({ password: newPassword })
       if (error) throw error
+      
       toast.success('¡Contraseña actualizada correctamente!')
+      setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
     } catch (err: any) {
@@ -300,30 +321,44 @@ export default function Profile() {
                   <KeyRound className="w-4.5 h-4.5 text-primary" />
                   Cambiar Contraseña
                 </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">
-                      Nueva Contraseña
+                      Contraseña Actual
                     </label>
                     <input
                       type="password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-800"
-                      placeholder="Mínimo 6 caracteres"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      className="w-full sm:w-1/2 px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-800 block"
+                      placeholder="Ingresa tu contraseña actual"
                     />
                   </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">
-                      Confirmar Nueva Contraseña
-                    </label>
-                    <input
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-800"
-                      placeholder="Confirmar contraseña"
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">
+                        Nueva Contraseña
+                      </label>
+                      <input
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-800"
+                        placeholder="Mínimo 6 caracteres"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">
+                        Confirmar Nueva Contraseña
+                      </label>
+                      <input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-800"
+                        placeholder="Confirmar contraseña"
+                      />
+                    </div>
                   </div>
                 </div>
                 <div className="flex justify-end pt-2">
