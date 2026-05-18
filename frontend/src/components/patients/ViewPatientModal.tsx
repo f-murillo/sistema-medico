@@ -1,0 +1,117 @@
+import { X, User, Calendar, Phone, Mail, IdCard, Shield, Heart, Activity } from 'lucide-react'
+import type { Paciente } from '@/types'
+
+interface ViewPatientModalProps {
+  isOpen: boolean
+  onClose: () => void
+  patient: Paciente
+}
+
+export default function ViewPatientModal({ isOpen, onClose, patient }: ViewPatientModalProps) {
+  if (!isOpen) return null
+
+  const dataSections = [
+    {
+      title: 'Datos Personales',
+      icon: User,
+      color: 'text-blue-500',
+      fields: [
+        { label: 'Nombre Completo', value: patient.nombre_completo },
+        { label: 'Cédula / ID', value: patient.cedula },
+        { label: 'Género', value: patient.genero },
+        { label: 'Fecha de Nacimiento', value: new Date(patient.fecha_nacimiento).toLocaleDateString('es-ES', { timeZone: 'UTC', day: 'numeric', month: 'long', year: 'numeric' }) },
+      ]
+    },
+    {
+      title: 'Contacto',
+      icon: Phone,
+      color: 'text-green-500',
+      fields: [
+        { label: 'Teléfono', value: patient.telefono },
+        { label: 'Correo Electrónico', value: patient.email || 'No registrado' },
+      ]
+    },
+    {
+      title: 'Información de Seguro',
+      icon: Shield,
+      color: 'text-purple-500',
+      fields: [
+        { label: 'Compañía', value: patient.seguro_compania || 'Particular' },
+        { label: 'Nº Póliza', value: patient.seguro_poliza || 'N/A' },
+      ]
+    },
+    {
+      title: 'Emergencia',
+      icon: Heart,
+      color: 'text-red-500',
+      fields: [
+        { label: 'Contacto de Emergencia', value: patient.contacto_emergencia_nombre || 'No registrado' },
+        { label: 'Teléfono de Emergencia', value: patient.contacto_emergencia_telefono || 'N/A' },
+      ]
+    }
+  ]
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
+      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-6 border-b border-slate-100 bg-slate-50">
+          <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+            <IdCard className="w-5 h-5 text-primary" />
+            Ficha Completa del Paciente
+          </h3>
+          <button onClick={onClose} className="p-2 hover:cursor-pointer hover:bg-slate-200 rounded-full transition-colors">
+            <X className="w-5 h-5 text-slate-400" />
+          </button>
+        </div>
+
+        <div className="p-8 space-y-8 overflow-y-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {dataSections.map((section) => (
+              <div key={section.title} className="space-y-4">
+                <h4 className={`text-xs font-bold uppercase tracking-widest flex items-center gap-2 ${section.color}`}>
+                  <section.icon className="w-4 h-4" />
+                  {section.title}
+                </h4>
+                <div className="space-y-3">
+                  {section.fields.map((field) => (
+                    <div key={field.label}>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{field.label}</p>
+                      <p className="text-sm font-semibold text-slate-700">{field.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="pt-6 border-t border-slate-100 space-y-4">
+            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <Activity className="w-4 h-4 text-orange-500" />
+              Información Clínica Registrada
+            </h4>
+            <div className="grid grid-cols-1 gap-4">
+              <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight mb-1">Alergias</p>
+                <p className="text-sm font-bold text-red-600">{patient.alergias || 'Ninguna conocida'}</p>
+              </div>
+              <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight mb-1">Antecedentes Médicos</p>
+                <p className="text-sm font-medium text-slate-700 whitespace-pre-wrap">{patient.antecedentes || 'Sin antecedentes registrados'}</p>
+              </div>
+              <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight mb-1">Tratamiento Actual</p>
+                <p className="text-sm font-medium text-slate-700">{patient.tratamiento_actual || 'No reportado'}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-end">
+          <button onClick={onClose} className="px-6 py-2.5 bg-slate-900 text-white font-bold rounded-xl hover:cursor-pointer hover:bg-slate-800 transition-all shadow-md">
+            Cerrar Ficha
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
