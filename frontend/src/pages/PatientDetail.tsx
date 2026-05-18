@@ -42,6 +42,25 @@ export default function PatientDetail() {
   const [selectedDoc, setSelectedDoc] = useState<{ nombre: string, url: string, path: string } | null>(null)
   const [isDownloading, setIsDownloading] = useState(false)
 
+  // Helper: si el texto tiene comas, muestra cada ítem como viñeta
+  const renderField = (text: string | undefined | null, className?: string) => {
+    if (!text) return null
+    const items = text.split(',').map(s => s.trim()).filter(Boolean)
+    if (items.length <= 1) {
+      return <p className={className}>{text}</p>
+    }
+    return (
+      <ul className="space-y-1">
+        {items.map((item, i) => (
+          <li key={i} className={`flex items-start gap-1.5 ${className ?? ''}`}>
+            <span className="mt-1 w-1.5 h-1.5 rounded-full bg-current shrink-0" />
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
   const handleDownload = async () => {
     if (!selectedDoc) return
     setIsDownloading(true)
@@ -162,13 +181,13 @@ export default function PatientDetail() {
                     {patient.alergias && (
                       <div className="space-y-1">
                         <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Alergias</p>
-                        <p className="font-bold text-slate-800 text-sm leading-relaxed">{patient.alergias}</p>
+                        {renderField(patient.alergias, 'font-bold text-slate-800 text-sm leading-relaxed')}
                       </div>
                     )}
                     {patient.tratamiento_actual && (
                       <div className="space-y-1">
                         <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Tratamiento Actual</p>
-                        <p className="font-bold text-slate-800 text-sm leading-relaxed">{patient.tratamiento_actual}</p>
+                        {renderField(patient.tratamiento_actual, 'font-bold text-slate-800 text-sm leading-relaxed')}
                       </div>
                     )}
                   </>
@@ -185,9 +204,10 @@ export default function PatientDetail() {
               Antecedentes Médicos
             </h5>
             <div className="flex-1 overflow-y-auto max-h-[200px] pr-2 custom-scrollbar">
-              <p className="font-bold text-slate-800 text-sm leading-relaxed">
-                {patient.antecedentes || 'No se han registrado antecedentes relevantes para este paciente todavía.'}
-              </p>
+              {patient.antecedentes
+                ? renderField(patient.antecedentes, 'font-bold text-slate-800 text-sm leading-relaxed')
+                : <p className="font-bold text-slate-800 text-sm leading-relaxed">No se han registrado antecedentes relevantes para este paciente todavía.</p>
+              }
             </div>
           </div>
         </div>
@@ -266,7 +286,9 @@ export default function PatientDetail() {
                       {item.notas_generales && (
                         <div>
                           <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Examen Físico / Notas</h5>
-                          <p className="text-sm text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100">{item.notas_generales}</p>
+                          <div className="text-sm text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            {renderField(item.notas_generales, 'text-sm text-slate-600 leading-relaxed')}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -274,11 +296,15 @@ export default function PatientDetail() {
                     <div className="space-y-4">
                       <div>
                         <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 text-primary">Diagnóstico</h5>
-                        <p className="text-sm font-bold text-slate-900 bg-primary/5 p-3 rounded-xl border border-primary/10">{item.diagnostico}</p>
+                        <div className="text-sm font-bold text-slate-900 bg-primary/5 p-3 rounded-xl border border-primary/10">
+                          {renderField(item.diagnostico, 'font-bold text-slate-900 text-sm leading-relaxed')}
+                        </div>
                       </div>
                       <div>
                         <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 text-green-600">Tratamiento / Plan</h5>
-                        <p className="text-sm font-bold text-green-700 bg-green-50 p-3 rounded-xl border border-green-100">{item.tratamiento}</p>
+                        <div className="text-sm font-bold text-green-700 bg-green-50 p-3 rounded-xl border border-green-100">
+                          {renderField(item.tratamiento, 'font-bold text-green-700 text-sm leading-relaxed')}
+                        </div>
                       </div>
                     </div>
                   </div>
