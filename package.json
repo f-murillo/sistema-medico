@@ -1,0 +1,8 @@
+{
+  "name": "sistema-medico-root",
+  "private": true,
+  "packageManager": "pnpm@9.15.4",
+  "engines": {
+    "node": "20.x"
+  }
+}
