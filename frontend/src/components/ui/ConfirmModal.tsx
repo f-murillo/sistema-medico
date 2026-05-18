@@ -1,7 +1,7 @@
 import { AlertTriangle, CheckCircle2, X, Eye, EyeOff, Loader2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/services/supabase'
 
 interface ConfirmModalProps {
