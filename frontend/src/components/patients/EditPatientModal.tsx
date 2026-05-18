@@ -2,28 +2,38 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { X, User, Calendar, Phone, Mail, IdCard, Loader2, Shield, Heart, Activity } from 'lucide-react'
+import { X, User, Shield, Heart, Activity, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { usePatients } from '@/hooks/usePatients'
 import type { Paciente } from '@/types'
+import MilitaryAffiliationFields from '@/components/patients/MilitaryAffiliationFields'
+import {
+  affiliationFields,
+  mapAffiliationPayload,
+  TIPO_AFILIACION_NINGUNA,
+  withMilitaryAffiliationValidation,
+} from '@/lib/patientSchema'
 
-const patientSchema = z.object({
-  nombre_completo: z.string().min(3, 'El nombre debe tener al menos 3 caracteres'),
-  cedula: z.string().min(5, 'Cédula inválida'),
-  fecha_nacimiento: z.string().refine((date) => !isNaN(Date.parse(date)), {
-    message: 'Fecha de nacimiento inválida',
-  }),
-  genero: z.enum(['Masculino', 'Femenino', 'Otro']),
-  telefono: z.string().min(7, 'Teléfono inválido'),
-  email: z.string().email('Email inválido').optional().or(z.literal('')),
-  seguro_compania: z.string().optional(),
-  seguro_poliza: z.string().optional(),
-  contacto_emergencia_nombre: z.string().optional(),
-  contacto_emergencia_telefono: z.string().optional(),
-  alergias: z.string().optional(),
-  antecedentes: z.string().optional(),
-  tratamiento_actual: z.string().optional(),
-})
+const patientSchema = withMilitaryAffiliationValidation(
+  z.object({
+    nombre_completo: z.string().min(3, 'El nombre debe tener al menos 3 caracteres'),
+    cedula: z.string().min(5, 'Cédula inválida'),
+    fecha_nacimiento: z.string().refine((date) => !isNaN(Date.parse(date)), {
+      message: 'Fecha de nacimiento inválida',
+    }),
+    genero: z.enum(['Masculino', 'Femenino', 'Otro']),
+    telefono: z.string().min(7, 'Teléfono inválido'),
+    email: z.string().email('Email inválido').optional().or(z.literal('')),
+    seguro_compania: z.string().optional(),
+    seguro_poliza: z.string().optional(),
+    contacto_emergencia_nombre: z.string().optional(),
+    contacto_emergencia_telefono: z.string().optional(),
+    alergias: z.string().optional(),
+    antecedentes: z.string().optional(),
+    tratamiento_actual: z.string().optional(),
+    ...affiliationFields,
+  })
+)
 
 type PatientForm = z.infer<typeof patientSchema>
 
@@ -35,10 +45,19 @@ interface EditPatientModalProps {
 
 export default function EditPatientModal({ isOpen, onClose, patient }: EditPatientModalProps) {
   const { updatePatient, isUpdating } = usePatients()
-  
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<PatientForm>({
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    control,
+    watch,
+    formState: { errors },
+  } = useForm<PatientForm>({
     resolver: zodResolver(patientSchema),
   })
+
+  const esAfiliado = watch('es_afiliado')
 
   useEffect(() => {
     if (patient) {
@@ -46,7 +65,7 @@ export default function EditPatientModal({ isOpen, onClose, patient }: EditPatie
         nombre_completo: patient.nombre_completo,
         cedula: patient.cedula,
         fecha_nacimiento: new Date(patient.fecha_nacimiento).toISOString().split('T')[0],
-        genero: patient.genero as any,
+        genero: patient.genero as PatientForm['genero'],
         telefono: patient.telefono,
         email: patient.email,
         seguro_compania: patient.seguro_compania,
@@ -56,6 +75,12 @@ export default function EditPatientModal({ isOpen, onClose, patient }: EditPatie
         alergias: patient.alergias,
         antecedentes: patient.antecedentes,
         tratamiento_actual: patient.tratamiento_actual,
+        es_afiliado: patient.es_afiliado ?? false,
+        tipo_afiliacion:
+          patient.es_afiliado && patient.tipo_afiliacion !== TIPO_AFILIACION_NINGUNA
+            ? patient.tipo_afiliacion
+            : undefined,
+        titular_nombre: patient.titular_nombre ?? '',
       })
     }
   }, [patient, reset])
@@ -63,10 +88,14 @@ export default function EditPatientModal({ isOpen, onClose, patient }: EditPatie
   if (!isOpen) return null
 
   const onSubmit = (data: PatientForm) => {
-    const formattedData = {
+    const affiliation = mapAffiliationPayload(data)
+
+    const formattedData: Paciente = {
       ...patient,
       ...data,
+      ...affiliation,
       fecha_nacimiento: new Date(data.fecha_nacimiento).toISOString(),
+      titular_nombre: data.es_afiliado ? affiliation.titular_nombre : null,
     }
 
     updatePatient(formattedData, {
@@ -74,9 +103,9 @@ export default function EditPatientModal({ isOpen, onClose, patient }: EditPatie
         toast.success('Datos del paciente actualizados')
         onClose()
       },
-      onError: (error: any) => {
+      onError: (error: Error) => {
         toast.error(`Error: ${error.message}`)
-      }
+      },
     })
   }
 
@@ -88,7 +117,7 @@ export default function EditPatientModal({ isOpen, onClose, patient }: EditPatie
             <User className="w-5 h-5 text-primary" />
             Editar Datos del Paciente
           </h3>
-          <button 
+          <button
             onClick={onClose}
             className="p-2 hover:cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-600 rounded-full transition-colors"
           >
@@ -97,7 +126,6 @@ export default function EditPatientModal({ isOpen, onClose, patient }: EditPatie
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6 overflow-y-auto">
-          {/* Datos Personales */}
           <div className="space-y-4">
             <h4 className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Datos Personales</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -135,10 +163,11 @@ export default function EditPatientModal({ isOpen, onClose, patient }: EditPatie
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Correo Electrónico</label>
                 <input {...register('email')} type="email" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none" />
               </div>
+
+              <MilitaryAffiliationFields control={control} errors={errors} esAfiliado={!!esAfiliado} />
             </div>
           </div>
 
-          {/* Seguro Médico */}
           <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-700">
             <h4 className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-2">
               <Shield className="w-4 h-4" />
@@ -156,7 +185,6 @@ export default function EditPatientModal({ isOpen, onClose, patient }: EditPatie
             </div>
           </div>
 
-          {/* Contacto de Emergencia */}
           <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-700">
             <h4 className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-2">
               <Heart className="w-4 h-4" />
@@ -174,7 +202,6 @@ export default function EditPatientModal({ isOpen, onClose, patient }: EditPatie
             </div>
           </div>
 
-          {/* Información Clínica */}
           <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-700">
             <h4 className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-2">
               <Activity className="w-4 h-4 text-orange-500" />

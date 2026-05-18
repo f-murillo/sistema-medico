@@ -18,7 +18,8 @@ import {
   Eye,
   Download,
   Loader2,
-  Trash2
+  Trash2,
+  Medal
 } from 'lucide-react'
 import ConfirmModal from '@/components/ui/ConfirmModal'
 import { usePatientDetail } from '@/hooks/usePatientDetail'
@@ -144,6 +145,22 @@ export default function PatientDetail() {
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Contacto Emergencia</p>
               <p className="text-sm font-bold text-slate-700 dark:text-slate-300 truncate">{patient.contacto_emergencia_telefono || '-'}</p>
             </div>
+            {patient.es_afiliado && (
+              <div className="col-span-2 mt-1 p-3 rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-900/20">
+                <div className="flex items-start gap-2">
+                  <Medal className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                      Afiliado Militar
+                    </p>
+                    <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">
+                      {patient.tipo_afiliacion}
+                      {patient.titular_nombre ? ` · Titular: ${patient.titular_nombre}` : ''}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="p-4 bg-white dark:bg-slate-800 flex gap-2">

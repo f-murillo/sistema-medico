@@ -14,6 +14,9 @@ export interface Paciente {
   alergias: string
   antecedentes: string
   tratamiento_actual: string
+  es_afiliado: boolean
+  tipo_afiliacion: string
+  titular_nombre?: string | null
   created_at: string
   updated_at: string
 }

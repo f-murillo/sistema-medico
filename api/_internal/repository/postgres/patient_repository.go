@@ -31,6 +31,7 @@ func (r *patientRepo) ListByMedico(ctx context.Context, medicoID uuid.UUID) ([]m
               COALESCE(telefono, ''), COALESCE(email, ''), COALESCE(seguro_compania, ''), COALESCE(seguro_poliza, ''), 
               COALESCE(contacto_emergencia_nombre, ''), COALESCE(contacto_emergencia_telefono, ''), 
               COALESCE(alergias, ''), COALESCE(antecedentes, ''), COALESCE(tratamiento_actual, ''), 
+              COALESCE(es_afiliado, false), COALESCE(tipo_afiliacion, 'Ninguna'), titular_nombre,
               created_at, updated_at 
               FROM pacientes WHERE medico_id = $1`
 
@@ -48,6 +49,7 @@ func (r *patientRepo) ListByMedico(ctx context.Context, medicoID uuid.UUID) ([]m
 			&p.ID, &p.MedicoID, &p.NombreCompleto, &p.Cedula, &p.FechaNacimiento, &p.Genero, &p.Telefono, &p.Email,
 			&p.SeguroCompania, &p.SeguroPoliza, &p.ContactoEmergenciaNombre, &p.ContactoEmergenciaTelefono,
 			&p.Alergias, &p.Antecedentes, &p.TratamientoActual,
+			&p.EsAfiliado, &p.TipoAfiliacion, &p.TitularNombre,
 			&p.CreatedAt, &p.UpdatedAt,
 		)
 		if err != nil {
@@ -62,14 +64,15 @@ func (r *patientRepo) ListByMedico(ctx context.Context, medicoID uuid.UUID) ([]m
 func (r *patientRepo) Create(ctx context.Context, p *models.Paciente) error {
 	query := `INSERT INTO pacientes (medico_id, nombre_completo, cedula, fecha_nacimiento, genero, telefono, email, 
               seguro_compania, seguro_poliza, contacto_emergencia_nombre, contacto_emergencia_telefono,
-              alergias, antecedentes, tratamiento_actual)
-              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+              alergias, antecedentes, tratamiento_actual, es_afiliado, tipo_afiliacion, titular_nombre)
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
               RETURNING id, created_at, updated_at`
 
 	err := r.pool.QueryRow(ctx, query,
 		p.MedicoID, p.NombreCompleto, p.Cedula, p.FechaNacimiento, p.Genero, p.Telefono, p.Email,
 		p.SeguroCompania, p.SeguroPoliza, p.ContactoEmergenciaNombre, p.ContactoEmergenciaTelefono,
 		p.Alergias, p.Antecedentes, p.TratamientoActual,
+		p.EsAfiliado, p.TipoAfiliacion, p.TitularNombre,
 	).Scan(&p.ID, &p.CreatedAt, &p.UpdatedAt)
 
 	if err != nil {
@@ -83,6 +86,7 @@ func (r *patientRepo) GetByID(ctx context.Context, id uuid.UUID) (*models.Pacien
               COALESCE(telefono, ''), COALESCE(email, ''), COALESCE(seguro_compania, ''), COALESCE(seguro_poliza, ''), 
               COALESCE(contacto_emergencia_nombre, ''), COALESCE(contacto_emergencia_telefono, ''), 
               COALESCE(alergias, ''), COALESCE(antecedentes, ''), COALESCE(tratamiento_actual, ''), 
+              COALESCE(es_afiliado, false), COALESCE(tipo_afiliacion, 'Ninguna'), titular_nombre,
               created_at, updated_at 
               FROM pacientes WHERE id = $1`
 
@@ -91,6 +95,7 @@ func (r *patientRepo) GetByID(ctx context.Context, id uuid.UUID) (*models.Pacien
 		&p.ID, &p.MedicoID, &p.NombreCompleto, &p.Cedula, &p.FechaNacimiento, &p.Genero, &p.Telefono, &p.Email,
 		&p.SeguroCompania, &p.SeguroPoliza, &p.ContactoEmergenciaNombre, &p.ContactoEmergenciaTelefono,
 		&p.Alergias, &p.Antecedentes, &p.TratamientoActual,
+		&p.EsAfiliado, &p.TipoAfiliacion, &p.TitularNombre,
 		&p.CreatedAt, &p.UpdatedAt,
 	)
 	if err != nil {
@@ -104,13 +109,15 @@ func (r *patientRepo) Update(ctx context.Context, p *models.Paciente) error {
               SET nombre_completo = $1, cedula = $2, fecha_nacimiento = $3, genero = $4, telefono = $5, email = $6, 
                   seguro_compania = $7, seguro_poliza = $8, contacto_emergencia_nombre = $9, 
                   contacto_emergencia_telefono = $10, alergias = $11, antecedentes = $12, tratamiento_actual = $13,
+                  es_afiliado = $14, tipo_afiliacion = $15, titular_nombre = $16,
                   updated_at = NOW() 
-              WHERE id = $14 AND medico_id = $15`
+              WHERE id = $17 AND medico_id = $18`
 	
 	result, err := r.pool.Exec(ctx, query, 
 		p.NombreCompleto, p.Cedula, p.FechaNacimiento, p.Genero, p.Telefono, p.Email, 
 		p.SeguroCompania, p.SeguroPoliza, p.ContactoEmergenciaNombre, 
 		p.ContactoEmergenciaTelefono, p.Alergias, p.Antecedentes, p.TratamientoActual,
+		p.EsAfiliado, p.TipoAfiliacion, p.TitularNombre,
 		p.ID, p.MedicoID,
 	)
 	if err != nil {

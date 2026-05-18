@@ -1,24 +1,32 @@
-import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { X, User, Calendar, Phone, Mail, IdCard, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { usePatients } from '@/hooks/usePatients'
+import MilitaryAffiliationFields from '@/components/patients/MilitaryAffiliationFields'
+import {
+  affiliationFields,
+  mapAffiliationPayload,
+  withMilitaryAffiliationValidation,
+} from '@/lib/patientSchema'
 
-const patientSchema = z.object({
-  nombre_completo: z.string().min(3, 'El nombre debe tener al menos 3 caracteres'),
-  cedula: z.string().min(5, 'Cédula inválida'),
-  fecha_nacimiento: z.string().refine((date) => !isNaN(Date.parse(date)), {
-    message: 'Fecha de nacimiento inválida',
-  }),
-  genero: z.enum(['Masculino', 'Femenino', 'Otro']),
-  telefono: z.string().min(7, 'Teléfono inválido'),
-  email: z.string().email('Email inválido').optional().or(z.literal('')),
-  alergias: z.string().optional(),
-  antecedentes: z.string().optional(),
-  tratamiento_actual: z.string().optional(),
-})
+const patientSchema = withMilitaryAffiliationValidation(
+  z.object({
+    nombre_completo: z.string().min(3, 'El nombre debe tener al menos 3 caracteres'),
+    cedula: z.string().min(5, 'Cédula inválida'),
+    fecha_nacimiento: z.string().refine((date) => !isNaN(Date.parse(date)), {
+      message: 'Fecha de nacimiento inválida',
+    }),
+    genero: z.enum(['Masculino', 'Femenino', 'Otro']),
+    telefono: z.string().min(7, 'Teléfono inválido'),
+    email: z.string().email('Email inválido').optional().or(z.literal('')),
+    alergias: z.string().optional(),
+    antecedentes: z.string().optional(),
+    tratamiento_actual: z.string().optional(),
+    ...affiliationFields,
+  })
+)
 
 type PatientForm = z.infer<typeof patientSchema>
 
@@ -29,33 +37,42 @@ interface AddPatientModalProps {
 
 export default function AddPatientModal({ isOpen, onClose }: AddPatientModalProps) {
   const { createPatient, isCreating } = usePatients()
-  
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<PatientForm>({
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    control,
+    watch,
+    formState: { errors },
+  } = useForm<PatientForm>({
     resolver: zodResolver(patientSchema),
     defaultValues: {
       genero: 'Masculino',
-    }
+      es_afiliado: false,
+    },
   })
+
+  const esAfiliado = watch('es_afiliado')
 
   if (!isOpen) return null
 
   const onSubmit = (data: PatientForm) => {
-    // Transformamos la fecha a formato ISO que Go puede procesar como time.Time
-    const formattedData = {
+    const payload = mapAffiliationPayload({
       ...data,
       fecha_nacimiento: new Date(data.fecha_nacimiento).toISOString(),
-    }
+    })
 
-    createPatient(formattedData, {
+    createPatient(payload, {
       onSuccess: () => {
         toast.success('Paciente registrado correctamente')
         reset()
         onClose()
       },
-      onError: (error: any) => {
-        const message = error.response?.data || error.message
+      onError: (error: Error & { response?: { data?: string } }) => {
+        const message = error.response?.data ?? error.message
         toast.error(`Error: ${message}`)
-      }
+      },
     })
   }
 
@@ -67,7 +84,7 @@ export default function AddPatientModal({ isOpen, onClose }: AddPatientModalProp
             <User className="w-5 h-5 text-primary" />
             Registrar Nuevo Paciente
           </h3>
-          <button 
+          <button
             onClick={onClose}
             className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 hover:cursor-pointer rounded-full transition-colors"
           >
@@ -77,7 +94,6 @@ export default function AddPatientModal({ isOpen, onClose }: AddPatientModalProp
 
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4 overflow-y-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Nombre */}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nombre Completo</label>
               <div className="relative">
@@ -91,7 +107,6 @@ export default function AddPatientModal({ isOpen, onClose }: AddPatientModalProp
               {errors.nombre_completo && <p className="text-xs text-red-500 mt-1">{errors.nombre_completo.message}</p>}
             </div>
 
-            {/* Cédula */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Cédula / ID</label>
               <div className="relative">
@@ -105,7 +120,6 @@ export default function AddPatientModal({ isOpen, onClose }: AddPatientModalProp
               {errors.cedula && <p className="text-xs text-red-500 mt-1">{errors.cedula.message}</p>}
             </div>
 
-            {/* Fecha Nacimiento */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Fecha de Nacimiento</label>
               <div className="relative">
@@ -119,7 +133,6 @@ export default function AddPatientModal({ isOpen, onClose }: AddPatientModalProp
               {errors.fecha_nacimiento && <p className="text-xs text-red-500 mt-1">{errors.fecha_nacimiento.message}</p>}
             </div>
 
-            {/* Género */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Género</label>
               <select
@@ -132,7 +145,6 @@ export default function AddPatientModal({ isOpen, onClose }: AddPatientModalProp
               </select>
             </div>
 
-            {/* Teléfono */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Teléfono</label>
               <div className="relative">
@@ -146,7 +158,6 @@ export default function AddPatientModal({ isOpen, onClose }: AddPatientModalProp
               {errors.telefono && <p className="text-xs text-red-500 mt-1">{errors.telefono.message}</p>}
             </div>
 
-            {/* Email */}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Correo Electrónico (Opcional)</label>
               <div className="relative">
@@ -160,6 +171,8 @@ export default function AddPatientModal({ isOpen, onClose }: AddPatientModalProp
               </div>
               {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
             </div>
+
+            <MilitaryAffiliationFields control={control} errors={errors} esAfiliado={!!esAfiliado} />
 
             <div className="md:col-span-2 space-y-4 pt-2">
               <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Información Clínica Inicial</h4>

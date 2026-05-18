@@ -1,4 +1,4 @@
-import { X, User, Phone, IdCard, Shield, Heart, Activity } from 'lucide-react'
+import { X, User, Phone, IdCard, Shield, Heart, Activity, Medal } from 'lucide-react'
 import type { Paciente } from '@/types'
 
 interface ViewPatientModalProps {
@@ -48,7 +48,19 @@ export default function ViewPatientModal({ isOpen, onClose, patient }: ViewPatie
         { label: 'Contacto de Emergencia', value: patient.contacto_emergencia_nombre || 'No registrado' },
         { label: 'Teléfono de Emergencia', value: patient.contacto_emergencia_telefono || 'N/A' },
       ]
-    }
+    },
+    ...(patient.es_afiliado
+      ? [{
+          title: 'Afiliación Militar',
+          icon: Medal,
+          color: 'text-amber-600 dark:text-amber-400',
+          fields: [
+            { label: 'Estado', value: 'Afiliado Militar' },
+            { label: 'Parentesco', value: patient.tipo_afiliacion },
+            { label: 'Titular Militar', value: patient.titular_nombre || 'No registrado' },
+          ],
+        }]
+      : []),
   ]
 
   return (

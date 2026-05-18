@@ -23,6 +23,9 @@ type Paciente struct {
 	Alergias                   string    `json:"alergias"`
 	Antecedentes               string    `json:"antecedentes"`
 	TratamientoActual          string    `json:"tratamiento_actual"`
+	EsAfiliado                 bool      `json:"es_afiliado"`
+	TipoAfiliacion             string    `json:"tipo_afiliacion"`
+	TitularNombre              *string   `json:"titular_nombre,omitempty"`
 	CreatedAt                  time.Time `json:"created_at"`
 	UpdatedAt                  time.Time `json:"updated_at"`
 }
