@@ -61,17 +61,17 @@ export default function AddPatientModal({ isOpen, onClose }: AddPatientModalProp
 
   return (
     <div className="fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
-      <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-6 border-b border-slate-100">
-          <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+      <div className="bg-white dark:bg-slate-800 w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50">
+          <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <User className="w-5 h-5 text-primary" />
             Registrar Nuevo Paciente
           </h3>
           <button 
             onClick={onClose}
-            className="p-2 hover:bg-slate-100 hover:cursor-pointer rounded-full transition-colors"
+            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 hover:cursor-pointer rounded-full transition-colors"
           >
-            <X className="w-5 h-5 text-slate-400" />
+            <X className="w-5 h-5 text-slate-400 dark:text-slate-500" />
           </button>
         </div>
 
@@ -79,12 +79,12 @@ export default function AddPatientModal({ isOpen, onClose }: AddPatientModalProp
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Nombre */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-1">Nombre Completo</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nombre Completo</label>
               <div className="relative">
-                <User className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <User className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 dark:text-slate-500" />
                 <input
                   {...register('nombre_completo')}
-                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                  className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500"
                   placeholder="Ej: Juan Pérez"
                 />
               </div>
@@ -93,12 +93,12 @@ export default function AddPatientModal({ isOpen, onClose }: AddPatientModalProp
 
             {/* Cédula */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Cédula / ID</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Cédula / ID</label>
               <div className="relative">
-                <IdCard className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <IdCard className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 dark:text-slate-500" />
                 <input
                   {...register('cedula')}
-                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                  className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500"
                   placeholder="12345678"
                 />
               </div>
@@ -107,13 +107,13 @@ export default function AddPatientModal({ isOpen, onClose }: AddPatientModalProp
 
             {/* Fecha Nacimiento */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Fecha de Nacimiento</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Fecha de Nacimiento</label>
               <div className="relative">
-                <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 dark:text-slate-500" />
                 <input
                   {...register('fecha_nacimiento')}
                   type="date"
-                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                  className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all [color-scheme:light] dark:[color-scheme:dark]"
                 />
               </div>
               {errors.fecha_nacimiento && <p className="text-xs text-red-500 mt-1">{errors.fecha_nacimiento.message}</p>}
@@ -121,10 +121,10 @@ export default function AddPatientModal({ isOpen, onClose }: AddPatientModalProp
 
             {/* Género */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Género</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Género</label>
               <select
                 {...register('genero')}
-                className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all bg-white"
+                className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
               >
                 <option value="Masculino">Masculino</option>
                 <option value="Femenino">Femenino</option>
@@ -134,12 +134,12 @@ export default function AddPatientModal({ isOpen, onClose }: AddPatientModalProp
 
             {/* Teléfono */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Teléfono</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Teléfono</label>
               <div className="relative">
-                <Phone className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <Phone className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 dark:text-slate-500" />
                 <input
                   {...register('telefono')}
-                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                  className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500"
                   placeholder="+54 11..."
                 />
               </div>
@@ -148,13 +148,13 @@ export default function AddPatientModal({ isOpen, onClose }: AddPatientModalProp
 
             {/* Email */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-1">Correo Electrónico (Opcional)</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Correo Electrónico (Opcional)</label>
               <div className="relative">
-                <Mail className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <Mail className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 dark:text-slate-500" />
                 <input
                   {...register('email')}
                   type="email"
-                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                  className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500"
                   placeholder="paciente@correo.com"
                 />
               </div>
@@ -162,33 +162,33 @@ export default function AddPatientModal({ isOpen, onClose }: AddPatientModalProp
             </div>
 
             <div className="md:col-span-2 space-y-4 pt-2">
-              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Información Clínica Inicial</h4>
+              <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Información Clínica Inicial</h4>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Alergias</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Alergias</label>
                 <textarea
                   {...register('alergias')}
                   rows={2}
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"
+                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none placeholder-slate-400 dark:placeholder-slate-500"
                   placeholder="Ej: Penicilina, polen, etc."
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Antecedentes Médicos</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Antecedentes Médicos</label>
                 <textarea
                   {...register('antecedentes')}
                   rows={2}
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"
+                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none placeholder-slate-400 dark:placeholder-slate-500"
                   placeholder="Cirugías previas, enfermedades crónicas, antecedentes familiares..."
                 />
               </div>
             </div>
           </div>
 
-          <div className="pt-6 flex gap-3 border-t border-slate-100">
+          <div className="pt-6 flex gap-3 border-t border-slate-100 dark:border-slate-700">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-600 font-semibold rounded-lg hover:cursor-pointer hover:bg-slate-50 transition-all"
+              className="flex-1 px-4 py-2.5 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 font-semibold rounded-lg hover:cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
             >
               Cancelar
             </button>

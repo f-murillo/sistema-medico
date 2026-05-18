@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Users, Calendar, Activity, Clock, AlertCircle, UserPlus, Trash2, ArrowRight } from 'lucide-react'
+import { Users, Calendar, Activity, Clock, AlertCircle, UserPlus, Trash2, Search } from 'lucide-react'
 import { usePatients } from '@/hooks/usePatients'
 import { useAppointments } from '@/hooks/useAppointments'
 import AddPatientModal from '@/components/patients/AddPatientModal'
@@ -47,20 +47,27 @@ export default function Dashboard() {
     })
   }
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [patientSearch, setPatientSearch] = useState('')
+
+  const filteredPatients = patients.filter(p =>
+    p.nombre_completo.toLowerCase().includes(patientSearch.toLowerCase()) ||
+    p.email?.toLowerCase().includes(patientSearch.toLowerCase()) ||
+    p.telefono?.toLowerCase().includes(patientSearch.toLowerCase())
+  )
 
   const stats = [
-    { name: 'Pacientes Totales', value: patients.length.toString(), icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { name: 'Citas Hoy', value: citasHoyCount.toString(), icon: Calendar, color: 'text-green-600', bg: 'bg-green-50', link: '/citas?filter=programada' },
-    { name: 'Nuevos Pacientes', value: nuevosPacientesHoyCount.toString(), icon: Activity, color: 'text-purple-600', bg: 'bg-purple-50' },
-    { name: 'Citas Pendientes', value: citasPendientesCount.toString(), icon: Clock, color: 'text-orange-600', bg: 'bg-orange-50', link: '/citas?filter=programada' },
+    { name: 'Pacientes Totales', value: patients.length.toString(), icon: Users, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/30' },
+    { name: 'Citas Hoy', value: citasHoyCount.toString(), icon: Calendar, color: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-900/30', link: '/citas?filter=programada' },
+    { name: 'Nuevos Pacientes', value: nuevosPacientesHoyCount.toString(), icon: Activity, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-900/30' },
+    { name: 'Citas Pendientes', value: citasPendientesCount.toString(), icon: Clock, color: 'text-orange-600 dark:text-orange-400', bg: 'bg-orange-50 dark:bg-orange-900/30', link: '/citas?filter=programada' },
   ]
 
   if (isError) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] space-y-4">
         <AlertCircle className="w-12 h-12 text-red-500" />
-        <h3 className="text-xl font-bold text-slate-900">Error al cargar datos</h3>
-        <p className="text-slate-500 text-center max-w-md">
+        <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">Error al cargar datos</h3>
+        <p className="text-slate-500 dark:text-slate-400 text-center max-w-md">
           Hubo un problema al conectar con el servidor. Por favor, asegúrate de que el backend esté corriendo en el puerto 8080.
         </p>
       </div>
@@ -71,8 +78,8 @@ export default function Dashboard() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-2xl font-bold text-slate-900">Panel de Resumen</h3>
-          <p className="text-slate-500">Visualiza el estado actual de tus pacientes y agenda.</p>
+          <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Panel de Resumen</h3>
+          <p className="text-slate-500 dark:text-slate-400">Visualiza el estado actual de tus pacientes y agenda.</p>
         </div>
         <button 
           onClick={() => setIsAddModalOpen(true)}
@@ -105,8 +112,8 @@ export default function Dashboard() {
           const cardContent = (
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-500">{stat.name}</p>
-                <p className="text-2xl font-bold text-slate-900 mt-1">{stat.value}</p>
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{stat.name}</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{stat.value}</p>
               </div>
               <div className={`${stat.bg} p-3 rounded-lg`}>
                 <stat.icon className={`w-6 h-6 ${stat.color}`} />
@@ -119,7 +126,7 @@ export default function Dashboard() {
               <Link 
                 key={stat.name} 
                 to={stat.link} 
-                className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm animate-in fade-in duration-500 hover:shadow-md hover:border-slate-300 hover:-translate-y-0.5 transition-all hover:cursor-pointer block"
+                className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm animate-in fade-in duration-500 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-600 hover:-translate-y-0.5 transition-all hover:cursor-pointer block"
               >
                 {cardContent}
               </Link>
@@ -127,63 +134,73 @@ export default function Dashboard() {
           }
 
           return (
-            <div key={stat.name} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm animate-in fade-in duration-500">
+            <div key={stat.name} className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm animate-in fade-in duration-500">
               {cardContent}
             </div>
           )
         })}
       </div>
 
-      {/* Recent Patients Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-slate-200 flex items-center justify-between">
-          <h4 className="text-lg font-bold text-slate-900">Pacientes</h4>
+      {/* Patients Table */}
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+        <div className="p-4 sm:p-6 border-b border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+          <h4 className="text-lg font-bold text-slate-900 dark:text-slate-100 shrink-0">Pacientes</h4>
+          <div className="relative max-w-xs w-full">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Buscar paciente..."
+              value={patientSearch}
+              onChange={(e) => setPatientSearch(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+            />
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-slate-50 border-b border-slate-200">
+            <thead className="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700">
               <tr>
-                <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Paciente</th>
-                <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Email / Teléfono</th>
-                <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Fecha Registro</th>
-                <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Acciones</th>
+                <th className="px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Paciente</th>
+                <th className="px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Email / Teléfono</th>
+                <th className="px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Fecha Registro</th>
+                <th className="px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200">
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
               {isLoading ? (
                 // Skeletons
                 [...Array(3)].map((_, i) => (
                   <tr key={i} className="animate-pulse">
-                    <td className="px-6 py-4"><div className="h-4 bg-slate-200 rounded w-3/4"></div></td>
-                    <td className="px-6 py-4"><div className="h-4 bg-slate-200 rounded w-1/2"></div></td>
-                    <td className="px-6 py-4"><div className="h-4 bg-slate-200 rounded w-1/4"></div></td>
-                    <td className="px-6 py-4 text-right"><div className="h-4 bg-slate-200 rounded w-16 ml-auto"></div></td>
+                    <td className="px-6 py-4"><div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div></td>
+                    <td className="px-6 py-4"><div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div></td>
+                    <td className="px-6 py-4"><div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/4"></div></td>
+                    <td className="px-6 py-4 text-right"><div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-16 ml-auto"></div></td>
                   </tr>
                 ))
-              ) : patients.length === 0 ? (
+              ) : filteredPatients.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-slate-500">
-                    No hay pacientes registrados todavía.
+                  <td colSpan={4} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
+                    {patientSearch ? `No se encontraron pacientes con "${patientSearch}".` : 'No hay pacientes registrados todavía.'}
                   </td>
                 </tr>
               ) : (
-                patients.map((patient) => (
-                  <tr key={patient.id} className="hover:bg-slate-50 transition-colors">
+                filteredPatients.map((patient) => (
+                  <tr key={patient.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
                           {patient.nombre_completo.split(' ').map(n => n[0]).join('')}
                         </div>
-                        <Link to={`/pacientes/${patient.id}`} className="font-medium text-slate-900 hover:text-primary transition-colors cursor-pointer">{patient.nombre_completo}</Link>
+                        <Link to={`/pacientes/${patient.id}`} className="font-medium text-slate-900 dark:text-slate-100 hover:text-primary transition-colors cursor-pointer">{patient.nombre_completo}</Link>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm">
-                        <p className="text-slate-900 font-medium">{patient.email}</p>
-                        <p className="text-slate-500">{patient.telefono}</p>
+                        <p className="text-slate-900 dark:text-slate-100 font-medium">{patient.email}</p>
+                        <p className="text-slate-500 dark:text-slate-400">{patient.telefono}</p>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-500">
+                    <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
                       {new Date(patient.created_at).toLocaleDateString('es-ES', {
                         day: 'numeric',
                         month: 'short',
@@ -200,7 +217,7 @@ export default function Dashboard() {
                         </Link>
                         <button 
                           onClick={() => handleDeletePatientClick(patient.id, patient.nombre_completo)}
-                          className="p-1.5 text-slate-400 hover:cursor-pointer hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                          className="p-1.5 text-slate-400 dark:text-slate-500 hover:cursor-pointer hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all"
                           title="Eliminar Paciente"
                         >
                           <Trash2 className="w-4 h-4" />

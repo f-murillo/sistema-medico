@@ -161,12 +161,12 @@ export default function Profile() {
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link to="/" className="p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-500 hover:cursor-pointer">
+          <Link to="/" className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-slate-500 dark:text-slate-400 hover:cursor-pointer">
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
-            <h2 className="text-3xl font-bold text-slate-900">Mi Perfil Profesional</h2>
-            <p className="text-slate-500">Gestiona tu información pública y credenciales médicas</p>
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Mi Perfil Profesional</h2>
+            <p className="text-slate-500 dark:text-slate-400">Gestiona tu información pública y credenciales médicas</p>
           </div>
         </div>
       </div>
@@ -174,69 +174,69 @@ export default function Profile() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Card de Visualización */}
         <div className="md:col-span-1 space-y-6">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden text-center p-8 sticky top-6">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden text-center p-8 sticky top-6">
             <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center text-4xl font-bold text-primary mx-auto mb-4 shadow-inner">
               {initials}
             </div>
-            <h3 className="font-bold text-xl text-slate-900 line-clamp-2">{profile?.nombre_completo}</h3>
-            <p className="text-primary font-medium text-sm mt-1">{profile?.especialidad || 'Especialidad no definida'}</p>
+            <h3 className="font-bold text-xl text-slate-900 dark:text-slate-100 line-clamp-2">{profile?.nombre_completo}</h3>
+            <p className="text-primary dark:text-blue-400 font-medium text-sm mt-1">{profile?.especialidad || 'Especialidad no definida'}</p>
           </div>
         </div>
 
         {/* Formularios de Edición e Inicio de Sesión */}
         <div className="md:col-span-2 space-y-8">
           {/* Card 1: Datos Profesionales */}
-          <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-8 space-y-6">
             <div>
-              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 <User className="w-5 h-5 text-primary" />
                 Datos Profesionales
               </h3>
-              <p className="text-xs text-slate-500">Tu información básica pública expuesta a los pacientes</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Tu información básica pública expuesta a los pacientes</p>
             </div>
 
-            <div className="pt-6 border-t border-slate-100 grid grid-cols-1 gap-6">
+            <div className="pt-6 border-t border-slate-100 dark:border-slate-700 grid grid-cols-1 gap-6">
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-2">
                   Nombre Completo
                 </label>
                 <input
                   {...register('nombre_completo')}
                   type="text"
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-800"
+                  className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-800 dark:text-slate-200"
                   placeholder="Dr. Nombre Apellido"
                 />
                 {errors.nombre_completo && <p className="text-xs text-red-500 mt-1">{errors.nombre_completo.message}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-2">
                   Especialidad Médica
                 </label>
                 <input
                   {...register('especialidad')}
                   type="text"
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-800"
+                  className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-800 dark:text-slate-200"
                   placeholder="Ej: Cardiología, Pediatría, etc."
                 />
                 {errors.especialidad && <p className="text-xs text-red-500 mt-1">{errors.especialidad.message}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1.5 flex items-center gap-2">
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-2">
                   Cédula Profesional / ID Médico
                 </label>
                 <input
                   {...register('cedula_profesional')}
                   type="text"
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-800"
+                  className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-800 dark:text-slate-200"
                   placeholder="Nº de Cédula o Registro Profesional"
                 />
                 {errors.cedula_profesional && <p className="text-xs text-red-500 mt-1">{errors.cedula_profesional.message}</p>}
               </div>
             </div>
 
-            <div className="pt-6 border-t border-slate-100 flex justify-end">
+            <div className="pt-6 border-t border-slate-100 dark:border-slate-700 flex justify-end">
               <button
                 type="submit"
                 disabled={updateMutation.isPending}
@@ -258,43 +258,43 @@ export default function Profile() {
           </form>
 
           {/* Card 2: Credenciales de Acceso */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 space-y-6">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-8 space-y-6">
             <div>
-              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 <Lock className="w-5 h-5 text-primary" />
                 Credenciales de Acceso
               </h3>
-              <p className="text-xs text-slate-500">Gestiona tu correo de ingreso y actualiza tu contraseña de seguridad</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Gestiona tu correo de ingreso y actualiza tu contraseña de seguridad</p>
             </div>
 
-            <div className="pt-6 border-t border-slate-100 space-y-8">
+            <div className="pt-6 border-t border-slate-100 dark:border-slate-700 space-y-8">
               {/* Sección 1: Cambiar Correo */}
               <form onSubmit={handleUpdateEmail} className="space-y-4">
-                <h4 className="font-bold text-sm text-slate-800 flex items-center gap-2">
+                <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
                   <Mail className="w-4.5 h-4.5 text-primary" />
                   Cambiar Correo Electrónico
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">
+                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">
                       Correo Actual
                     </label>
                     <input
                       type="email"
                       disabled
                       value={user?.email || ''}
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-500 cursor-not-allowed"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium text-slate-500 dark:text-slate-400 cursor-not-allowed"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">
+                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">
                       Nuevo Correo Electrónico
                     </label>
                     <input
                       type="email"
                       value={newEmail}
                       onChange={(e) => setNewEmail(e.target.value)}
-                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-800"
+                      className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-800 dark:text-slate-200"
                       placeholder="nuevo@correo.com"
                     />
                   </div>
@@ -320,14 +320,14 @@ export default function Profile() {
               </form>
 
               {/* Sección 2: Cambiar Contraseña */}
-              <form onSubmit={handleUpdatePassword} className="space-y-4 pt-6 border-t border-slate-100">
-                <h4 className="font-bold text-sm text-slate-800 flex items-center gap-2">
+              <form onSubmit={handleUpdatePassword} className="space-y-4 pt-6 border-t border-slate-100 dark:border-slate-700">
+                <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
                   <KeyRound className="w-4.5 h-4.5 text-primary" />
                   Cambiar Contraseña
                 </h4>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">
+                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">
                       Contraseña Actual
                     </label>
                     <div className="relative w-full sm:w-1/2">
@@ -335,7 +335,7 @@ export default function Profile() {
                         type={showCurrentPassword ? 'text' : 'password'}
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
-                        className="w-full px-4 py-2.5 pr-10 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-800"
+                        className="w-full px-4 py-2.5 pr-10 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-800 dark:text-slate-200"
                         placeholder="Ingresa tu contraseña actual"
                       />
                       <button
@@ -349,7 +349,7 @@ export default function Profile() {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">
+                      <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">
                         Nueva Contraseña
                       </label>
                       <div className="relative w-full">
@@ -357,7 +357,7 @@ export default function Profile() {
                           type={showNewPassword ? 'text' : 'password'}
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
-                          className="w-full px-4 py-2.5 pr-10 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-800"
+                          className="w-full px-4 py-2.5 pr-10 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-800 dark:text-slate-200"
                           placeholder="Mínimo 6 caracteres"
                         />
                         <button
@@ -370,7 +370,7 @@ export default function Profile() {
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">
+                      <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">
                         Confirmar Nueva Contraseña
                       </label>
                       <div className="relative w-full">
@@ -378,7 +378,7 @@ export default function Profile() {
                           type={showConfirmPassword ? 'text' : 'password'}
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
-                          className="w-full px-4 py-2.5 pr-10 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-800"
+                          className="w-full px-4 py-2.5 pr-10 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium text-slate-800 dark:text-slate-200"
                           placeholder="Confirmar contraseña"
                         />
                         <button

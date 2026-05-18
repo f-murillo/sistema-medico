@@ -94,29 +94,29 @@ export default function ConfirmModal({
       />
       
       {/* Modal Dialog */}
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md relative animate-in zoom-in-95 fade-in duration-200 overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md relative animate-in zoom-in-95 fade-in duration-200 overflow-hidden">
         {/* Header Ribbon */}
         <div className={`h-2 w-full ${isDestructive ? 'bg-red-500' : 'bg-primary'}`} />
         
         <div className="p-6 space-y-6">
           <div className="flex items-start gap-4">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
-              isDestructive ? 'bg-red-50 text-red-600' : 'bg-indigo-50 text-primary'
+              isDestructive ? 'bg-red-50 dark:bg-red-900/30 text-red-600' : 'bg-indigo-50 dark:bg-indigo-900/30 text-primary'
             }`}>
               {isDestructive ? <AlertTriangle className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
             </div>
             <div className="space-y-2 flex-1 pt-1">
-              <h3 className="font-bold text-lg text-slate-900 leading-tight">
+              <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100 leading-tight">
                 {title}
               </h3>
-              <p className="text-slate-600 text-sm leading-relaxed">
+              <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
                 {message}
               </p>
             </div>
             <button 
               onClick={onClose}
               disabled={isVerifying}
-              className="p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-lg transition-colors absolute top-4 right-4 hover:cursor-pointer disabled:opacity-50"
+              className="p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg transition-colors absolute top-4 right-4 hover:cursor-pointer disabled:opacity-50"
             >
               <X className="w-5 h-5" />
             </button>
@@ -124,7 +124,7 @@ export default function ConfirmModal({
 
           {requirePassword && (
             <div className="pt-2">
-              <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
                 Contraseña actual para confirmar
               </label>
               <div className="relative">
@@ -136,15 +136,15 @@ export default function ConfirmModal({
                     if (error) setError('')
                   }}
                   disabled={isVerifying}
-                  className={`w-full pl-4 pr-10 py-2.5 bg-slate-50 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-primary/20 ${
-                    error ? 'border-red-300 focus:border-red-500' : 'border-slate-200 focus:border-primary'
+                  className={`w-full pl-4 pr-10 py-2.5 bg-slate-50 dark:bg-slate-700 border rounded-xl outline-none transition-all focus:ring-2 focus:ring-primary/20 text-slate-900 dark:text-slate-100 ${
+                    error ? 'border-red-300 dark:border-red-500 focus:border-red-500' : 'border-slate-200 dark:border-slate-600 focus:border-primary'
                   }`}
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -157,7 +157,7 @@ export default function ConfirmModal({
             <button
               onClick={onClose}
               disabled={isVerifying}
-              className="px-5 py-2.5 rounded-xl font-semibold text-sm text-slate-600 hover:bg-slate-100 transition-colors hover:cursor-pointer disabled:opacity-50"
+              className="px-5 py-2.5 rounded-xl font-semibold text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors hover:cursor-pointer disabled:opacity-50"
             >
               {cancelText}
             </button>
