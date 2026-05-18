@@ -1,5 +1,6 @@
 import { AlertTriangle, CheckCircle2, X } from 'lucide-react'
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 
 interface ConfirmModalProps {
   isOpen: boolean
@@ -34,7 +35,7 @@ export default function ConfirmModal({
 
   if (!isOpen) return null
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
@@ -93,6 +94,7 @@ export default function ConfirmModal({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
