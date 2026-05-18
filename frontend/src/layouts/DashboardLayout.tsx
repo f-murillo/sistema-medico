@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
 import { useQuery } from '@tanstack/react-query'
 import { doctorService } from '@/services/doctorService'
+import GeminiChatWidget from '@/components/gemini/GeminiChatWidget'
 
 const navigation = [
   { name: 'Inicio', href: '/', icon: LayoutDashboard },
@@ -151,6 +152,9 @@ export default function DashboardLayout() {
           <Outlet />
         </div>
       </main>
+
+      {/* Asistente Inteligente Gemini */}
+      <GeminiChatWidget />
     </div>
   )
 }

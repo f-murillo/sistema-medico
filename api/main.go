@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"api/appointments"
+	"api/chat"
 	"api/history"
 	"api/me"
 	"api/patients"
@@ -47,6 +48,7 @@ func main() {
 	http.HandleFunc("/api/history", loggingMiddleware(history.Handler))
 	http.HandleFunc("/api/me", loggingMiddleware(me.MeHandler))
 	http.HandleFunc("/api/appointments", loggingMiddleware(appointments.Handler))
+	http.HandleFunc("/api/chat", loggingMiddleware(chat.Handler))
 
 	fmt.Printf("🚀 Servidor de desarrollo corriendo en http://localhost:%s\n", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
