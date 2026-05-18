@@ -93,9 +93,10 @@ export default function Dashboard() {
         onClose={() => setDeleteModalData({ isOpen: false, id: '', name: '' })}
         onConfirm={confirmDeletePatient}
         title="Eliminar Paciente"
-        message={`¿Estás seguro de que deseas eliminar al paciente ${deleteModalData.name}? Esta acción eliminará permanentemente todos sus datos y no se puede deshacer.`}
+        message={`¿Estás seguro de que deseas eliminar al paciente ${deleteModalData.name}? Esta acción eliminará permanentemente todos sus datos e historias clínicas asociadas y no se puede deshacer.`}
         confirmText="Eliminar Paciente"
         isDestructive={true}
+        requirePassword={true}
       />
 
       {/* Stats Grid */}

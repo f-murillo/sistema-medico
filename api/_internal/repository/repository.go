@@ -31,6 +31,9 @@ type PatientRepository interface {
 
 	// CreateHistoryWithDocuments registra una consulta y asocia documentos opcionales.
 	CreateHistoryWithDocuments(ctx context.Context, history *models.HistoriaClinica, storagePaths []string) error
+
+	// DeleteHistory elimina una historia clínica.
+	DeleteHistory(ctx context.Context, id uuid.UUID, medicoID uuid.UUID) error
 }
 
 // AppointmentRepository define las operaciones permitidas sobre las citas médicas.

@@ -14,7 +14,7 @@ import (
 func Handler(w http.ResponseWriter, r *http.Request) {
 	auth.CORSMiddleware(func(w http.ResponseWriter, r *http.Request) {
 		auth.AuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != http.MethodPost && r.Method != http.MethodPut {
+			if r.Method != http.MethodPost && r.Method != http.MethodPut && r.Method != http.MethodDelete {
 				http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
 				return
 			}
@@ -31,6 +31,34 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
+			repo, err := postgres.NewPatientRepository(ctx)
+			if err != nil {
+				http.Error(w, "Error de base de datos", http.StatusInternalServerError)
+				return
+			}
+
+			if r.Method == http.MethodDelete {
+				historyIDStr := r.URL.Query().Get("id")
+				if historyIDStr == "" {
+					http.Error(w, "ID de historia requerido", http.StatusBadRequest)
+					return
+				}
+				historyID, err := uuid.Parse(historyIDStr)
+				if err != nil {
+					http.Error(w, "ID de historia inválido", http.StatusBadRequest)
+					return
+				}
+
+				if err := repo.DeleteHistory(ctx, historyID, medicoID); err != nil {
+					log.Printf("❌ ERROR ELIMINANDO HISTORIA: %v", err)
+					http.Error(w, "Error eliminando historia: "+err.Error(), http.StatusInternalServerError)
+					return
+				}
+
+				w.WriteHeader(http.StatusNoContent)
+				return
+			}
+
 			var req struct {
 				History      models.HistoriaClinica `json:"history"`
 				StoragePaths []string               `json:"storage_paths"`
@@ -39,12 +67,6 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				http.Error(w, "Cuerpo de solicitud inválido", http.StatusBadRequest)
-				return
-			}
-
-			repo, err := postgres.NewPatientRepository(ctx)
-			if err != nil {
-				http.Error(w, "Error de base de datos", http.StatusInternalServerError)
 				return
 			}
 

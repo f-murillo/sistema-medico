@@ -32,6 +32,13 @@ export function usePatientDetail(patientId: string) {
     },
   })
 
+  const deleteHistoryMutation = useMutation({
+    mutationFn: (id: string) => patientService.deleteHistory(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['patient-history', patientId] })
+    },
+  })
+
   return {
     patient: patientQuery.data,
     isLoadingPatient: patientQuery.isLoading,
@@ -41,5 +48,7 @@ export function usePatientDetail(patientId: string) {
     isCreatingHistory: createHistoryMutation.isPending,
     updateHistory: updateHistoryMutation.mutate,
     isUpdatingHistory: updateHistoryMutation.isPending,
+    deleteHistory: deleteHistoryMutation.mutate,
+    isDeletingHistory: deleteHistoryMutation.isPending,
   }
 }

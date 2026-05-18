@@ -284,3 +284,17 @@ func (r *patientRepo) CreateHistoryWithDocuments(ctx context.Context, h *models.
 
 	return tx.Commit(ctx)
 }
+
+func (r *patientRepo) DeleteHistory(ctx context.Context, id uuid.UUID, medicoID uuid.UUID) error {
+	query := "DELETE FROM historias_clinicas WHERE id = $1 AND medico_id = $2"
+	result, err := r.pool.Exec(ctx, query, id, medicoID)
+	if err != nil {
+		return fmt.Errorf("error eliminando historia clínica: %w", err)
+	}
+
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("historia no encontrada o sin permisos")
+	}
+
+	return nil
+}

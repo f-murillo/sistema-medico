@@ -17,8 +17,10 @@ import {
   Activity,
   Eye,
   Download,
-  Loader2
+  Loader2,
+  Trash2
 } from 'lucide-react'
+import ConfirmModal from '@/components/ui/ConfirmModal'
 import { usePatientDetail } from '@/hooks/usePatientDetail'
 import { useState } from 'react'
 import { supabase } from '@/services/supabase'
@@ -31,11 +33,12 @@ import type { HistoriaClinica } from '@/types'
 
 export default function PatientDetail() {
   const { id } = useParams<{ id: string }>()
-  const { patient, history, isLoadingPatient, isLoadingHistory } = usePatientDetail(id!)
+  const { patient, history, isLoadingPatient, isLoadingHistory, deleteHistory } = usePatientDetail(id!)
   const [isAddHistoryOpen, setIsAddHistoryOpen] = useState(false)
   const [isEditPatientOpen, setIsEditPatientOpen] = useState(false)
   const [isViewPatientOpen, setIsViewPatientOpen] = useState(false)
   const [editingHistory, setEditingHistory] = useState<HistoriaClinica | null>(null)
+  const [deletingHistory, setDeletingHistory] = useState<HistoriaClinica | null>(null)
   const [selectedDoc, setSelectedDoc] = useState<{ nombre: string, url: string, path: string } | null>(null)
   const [isDownloading, setIsDownloading] = useState(false)
 
@@ -236,12 +239,22 @@ export default function PatientDetail() {
                         {new Date(item.fecha_consulta).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}hs
                       </span>
                     </div>
-                    <button 
-                      onClick={() => setEditingHistory(item)}
-                      className="p-2 text-slate-400 hover:cursor-pointer hover:text-primary hover:bg-primary/5 rounded-lg transition-all"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => setEditingHistory(item)}
+                        className="p-2 text-slate-400 hover:cursor-pointer hover:text-primary hover:bg-primary/5 rounded-lg transition-all"
+                        title="Editar historia"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => setDeletingHistory(item)}
+                        className="p-2 text-slate-400 hover:cursor-pointer hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                        title="Eliminar historia"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -376,6 +389,28 @@ export default function PatientDetail() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={!!deletingHistory}
+        onClose={() => setDeletingHistory(null)}
+        onConfirm={() => {
+          if (deletingHistory) {
+            deleteHistory(deletingHistory.id, {
+              onSuccess: () => {
+                toast.success('Historia clínica eliminada correctamente')
+              },
+              onError: (err: any) => {
+                toast.error(`Error al eliminar: ${err.message}`)
+              }
+            })
+          }
+        }}
+        title="Eliminar Historia Clínica"
+        message="¿Estás seguro de que deseas eliminar permanentemente esta historia clínica? Esta acción eliminará los documentos asociados y no se puede deshacer."
+        confirmText="Eliminar Historia"
+        isDestructive={true}
+        requirePassword={true}
+      />
     </div>
   )
 }

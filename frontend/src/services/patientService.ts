@@ -39,4 +39,8 @@ export const patientService = {
     const { data } = await api.put('/history', { history, storage_paths: storagePaths, deleted_paths: deletedPaths })
     return data
   },
+
+  async deleteHistory(id: string): Promise<void> {
+    await api.delete(`/history?id=${id}`)
+  },
 }
