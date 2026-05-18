@@ -4,6 +4,7 @@ import { Users, Calendar, Activity, Clock, AlertCircle, UserPlus, Trash2, ArrowR
 import { usePatients } from '@/hooks/usePatients'
 import { useAppointments } from '@/hooks/useAppointments'
 import AddPatientModal from '@/components/patients/AddPatientModal'
+import ConfirmModal from '@/components/ui/ConfirmModal'
 import { toast } from 'sonner'
 
 export default function Dashboard() {
@@ -33,13 +34,17 @@ export default function Dashboard() {
     return cita.estado === 'programada'
   }).length
 
-  const handleDeletePatient = (id: string, name: string) => {
-    if (window.confirm(`¿Estás seguro de que deseas eliminar al paciente ${name}? Esta acción no se puede deshacer.`)) {
-      deletePatient(id, {
-        onSuccess: () => toast.success('Paciente eliminado correctamente'),
-        onError: (err: any) => toast.error(`Error: ${err.message}`)
-      })
-    }
+  const [deleteModalData, setDeleteModalData] = useState<{ isOpen: boolean; id: string; name: string }>({ isOpen: false, id: '', name: '' })
+
+  const handleDeletePatientClick = (id: string, name: string) => {
+    setDeleteModalData({ isOpen: true, id, name })
+  }
+
+  const confirmDeletePatient = () => {
+    deletePatient(deleteModalData.id, {
+      onSuccess: () => toast.success('Paciente eliminado correctamente'),
+      onError: (err: any) => toast.error(`Error: ${err.message}`)
+    })
   }
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
 
@@ -81,6 +86,16 @@ export default function Dashboard() {
       <AddPatientModal 
         isOpen={isAddModalOpen} 
         onClose={() => setIsAddModalOpen(false)} 
+      />
+
+      <ConfirmModal
+        isOpen={deleteModalData.isOpen}
+        onClose={() => setDeleteModalData({ isOpen: false, id: '', name: '' })}
+        onConfirm={confirmDeletePatient}
+        title="Eliminar Paciente"
+        message={`¿Estás seguro de que deseas eliminar al paciente ${deleteModalData.name}? Esta acción eliminará permanentemente todos sus datos y no se puede deshacer.`}
+        confirmText="Eliminar Paciente"
+        isDestructive={true}
       />
 
       {/* Stats Grid */}
@@ -183,7 +198,7 @@ export default function Dashboard() {
                           Ver Ficha
                         </Link>
                         <button 
-                          onClick={() => handleDeletePatient(patient.id, patient.nombre_completo)}
+                          onClick={() => handleDeletePatientClick(patient.id, patient.nombre_completo)}
                           className="p-1.5 text-slate-400 hover:cursor-pointer hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
                           title="Eliminar Paciente"
                         >

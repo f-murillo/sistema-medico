@@ -9,6 +9,7 @@ import { useAppointments } from '@/hooks/useAppointments'
 import { usePatients } from '@/hooks/usePatients'
 import { toast } from 'sonner'
 import AddHistoryModal from '@/components/history/AddHistoryModal'
+import ConfirmModal from '@/components/ui/ConfirmModal'
 
 export default function Appointments() {
   const { 
@@ -32,6 +33,8 @@ export default function Appointments() {
   // Clinical History integration state
   const [selectedPatientIdForHistory, setSelectedPatientIdForHistory] = useState<string | null>(null)
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false)
+  const [historyModalData, setHistoryModalData] = useState<{ isOpen: boolean; patientId: string }>({ isOpen: false, patientId: '' })
+  const [deleteModalData, setDeleteModalData] = useState<{ isOpen: boolean; id: string; patientName: string }>({ isOpen: false, id: '', patientName: '' })
 
   // Form states for adding appointment
   const [newPacienteId, setNewPacienteId] = useState('')
@@ -136,13 +139,7 @@ export default function Appointments() {
         // Special workflow: if changed to completed, ask to fill Clinical History
         if (isNowCompleted && !wasAlreadyCompleted) {
           setTimeout(() => {
-            const confirmHistory = window.confirm(
-              'La cita ha sido marcada como COMPLETADA.\n\n¿Deseas ingresar una nueva evolución o historia médica para este paciente en este momento?'
-            )
-            if (confirmHistory) {
-              setSelectedPatientIdForHistory(editPacienteId)
-              setIsHistoryModalOpen(true)
-            }
+            setHistoryModalData({ isOpen: true, patientId: editPacienteId })
           }, 400)
         }
       },
@@ -164,13 +161,7 @@ export default function Appointments() {
       onSuccess: () => {
         toast.success('Cita completada correctamente')
         setTimeout(() => {
-          const confirmHistory = window.confirm(
-            'La cita ha sido marcada como COMPLETADA.\n\n¿Deseas ingresar una nueva evolución o historia médica para este paciente en este momento?'
-          )
-          if (confirmHistory) {
-            setSelectedPatientIdForHistory(appointment.paciente_id)
-            setIsHistoryModalOpen(true)
-          }
+          setHistoryModalData({ isOpen: true, patientId: appointment.paciente_id })
         }, 400)
       },
       onError: (err: any) => {
@@ -204,17 +195,19 @@ export default function Appointments() {
     })
   }
 
-  const handleDelete = (id: string, patientName: string) => {
-    if (window.confirm(`¿Estás seguro de que deseas eliminar la cita del paciente ${patientName}?`)) {
-      deleteAppointment(id, {
-        onSuccess: () => {
-          toast.success('Cita eliminada correctamente')
-        },
-        onError: (err: any) => {
-          toast.error(`Error al eliminar cita: ${err.message}`)
-        }
-      })
-    }
+  const handleDeleteClick = (id: string, patientName: string) => {
+    setDeleteModalData({ isOpen: true, id, patientName })
+  }
+
+  const confirmDeleteAppointment = () => {
+    deleteAppointment(deleteModalData.id, {
+      onSuccess: () => {
+        toast.success('Cita eliminada correctamente')
+      },
+      onError: (err: any) => {
+        toast.error(`Error al eliminar cita: ${err.message}`)
+      }
+    })
   }
 
   // Render Status Badge helper
@@ -270,6 +263,30 @@ export default function Appointments() {
           <Plus className="w-5 h-5" /> Agendar Nueva Cita
         </button>
       </div>
+
+      <ConfirmModal
+        isOpen={deleteModalData.isOpen}
+        onClose={() => setDeleteModalData({ isOpen: false, id: '', patientName: '' })}
+        onConfirm={confirmDeleteAppointment}
+        title="Eliminar Cita"
+        message={`¿Estás seguro de que deseas eliminar la cita del paciente ${deleteModalData.patientName}? Esta acción no se puede deshacer.`}
+        confirmText="Eliminar Cita"
+        isDestructive={true}
+      />
+
+      <ConfirmModal
+        isOpen={historyModalData.isOpen}
+        onClose={() => setHistoryModalData({ isOpen: false, patientId: '' })}
+        onConfirm={() => {
+          setSelectedPatientIdForHistory(historyModalData.patientId)
+          setIsHistoryModalOpen(true)
+        }}
+        title="Cita Completada"
+        message="La cita ha sido marcada como COMPLETADA. ¿Deseas ingresar una nueva evolución o historia médica para este paciente en este momento?"
+        confirmText="Sí, Crear Historia"
+        cancelText="No, en otro momento"
+        isDestructive={false}
+      />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -468,7 +485,7 @@ export default function Appointments() {
                     </button>
                     
                     <button
-                      onClick={() => handleDelete(cita.id, cita.paciente_nombre || 'Paciente')}
+                      onClick={() => handleDeleteClick(cita.id, cita.paciente_nombre || 'Paciente')}
                       className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 hover:cursor-pointer rounded-lg transition-colors"
                       title="Eliminar Cita"
                     >
