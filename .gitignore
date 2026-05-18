@@ -3,3 +3,10 @@
 .env.local
 .env.example
 *.env
+
+# Ejecutables de Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
