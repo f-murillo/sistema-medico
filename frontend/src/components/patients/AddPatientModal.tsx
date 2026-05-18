@@ -172,7 +172,7 @@ export default function AddPatientModal({ isOpen, onClose }: AddPatientModalProp
               {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
             </div>
 
-            <MilitaryAffiliationFields control={control} errors={errors} esAfiliado={!!esAfiliado} />
+            <MilitaryAffiliationFields control={control as any} errors={errors} esAfiliado={!!esAfiliado} />
 
             <div className="md:col-span-2 space-y-4 pt-2">
               <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Información Clínica Inicial</h4>

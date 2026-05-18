@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { patientService } from '@/services/patientService'
-import type { Paciente } from '@/types'
 
 export const usePatients = () => {
   const queryClient = useQueryClient()

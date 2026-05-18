@@ -1,15 +1,9 @@
 import { useParams, Link } from 'react-router-dom'
 import { 
   ArrowLeft, 
-  User, 
-  Calendar, 
-  Phone, 
-  Mail, 
-  IdCard, 
   Plus, 
   FileText,
   Clock,
-  ChevronRight,
   ClipboardList,
   X,
   Edit2,

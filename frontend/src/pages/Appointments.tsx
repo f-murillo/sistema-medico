@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { 
-  Calendar, Clock, User, ClipboardList, AlertCircle, 
+  Calendar, Clock, AlertCircle, 
   CheckCircle2, XCircle, Plus, Search, Filter, 
-  Trash2, Edit, ChevronLeft, ArrowLeft, CheckSquare, Undo2
+  Trash2, Edit, ArrowLeft, CheckSquare, Undo2
 } from 'lucide-react'
 import { useAppointments } from '@/hooks/useAppointments'
 import { usePatients } from '@/hooks/usePatients'
@@ -20,7 +20,7 @@ export default function Appointments() {
     deleteAppointment 
   } = useAppointments()
 
-  const { patients, isLoading: isLoadingPatients } = usePatients()
+  const { patients } = usePatients()
 
   // State
   const [searchParams] = useSearchParams()

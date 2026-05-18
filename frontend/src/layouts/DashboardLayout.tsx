@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Outlet, Link, useNavigate } from 'react-router-dom'
-import { Users, Calendar, LayoutDashboard, LogOut, User, ChevronRight, Stethoscope, Menu, X, Sun, Moon } from 'lucide-react'
+import { Calendar, LayoutDashboard, LogOut, User, ChevronRight, Stethoscope, Menu, X, Sun, Moon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'

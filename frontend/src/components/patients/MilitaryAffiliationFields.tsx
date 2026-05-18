@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react'
-import { Controller, type Control, type FieldErrors } from 'react-hook-form'
+import { Controller, type Control, type FieldErrors, type FieldValues } from 'react-hook-form'
 import { Medal, User } from 'lucide-react'
 import { Select } from '@/components/ui/select'
 import { TIPOS_AFILIACION_FAMILIAR } from '@/lib/patientSchema'
 
 interface MilitaryAffiliationFieldsProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  control: Control<any>
+  control: Control<any> | Control<FieldValues>
   errors: FieldErrors
   esAfiliado: boolean
 }

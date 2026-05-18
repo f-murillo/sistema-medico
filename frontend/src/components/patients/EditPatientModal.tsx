@@ -164,7 +164,7 @@ export default function EditPatientModal({ isOpen, onClose, patient }: EditPatie
                 <input {...register('email')} type="email" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none" />
               </div>
 
-              <MilitaryAffiliationFields control={control} errors={errors} esAfiliado={!!esAfiliado} />
+              <MilitaryAffiliationFields control={control as any} errors={errors} esAfiliado={!!esAfiliado} />
             </div>
           </div>
 
