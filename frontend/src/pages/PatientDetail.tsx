@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom'
-import { 
-  ArrowLeft, 
-  Plus, 
+import {
+  ArrowLeft,
+  Plus,
   FileText,
   Clock,
   ClipboardList,
@@ -63,7 +63,7 @@ export default function PatientDetail() {
       const { data, error } = await supabase.storage
         .from('documents')
         .download(selectedDoc.path)
-      
+
       if (error) throw error
 
       const blobUrl = URL.createObjectURL(data)
@@ -109,7 +109,7 @@ export default function PatientDetail() {
             <p className="text-slate-500 dark:text-slate-400 font-medium text-sm">Ficha Médica Digital</p>
           </div>
         </div>
-        <button 
+        <button
           onClick={() => setIsAddHistoryOpen(true)}
           className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white font-bold rounded-xl hover:cursor-pointer hover:bg-primary/90 transition-all shadow-md active:scale-95"
         >
@@ -120,7 +120,7 @@ export default function PatientDetail() {
 
       {/* FILA SUPERIOR: Dashboard de Información Crítica */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
+
         {/* Panel 1: Resumen del Paciente */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col h-full">
           <div className="bg-slate-50 dark:bg-slate-700/50 p-6 flex flex-col items-center border-b border-slate-200 dark:border-slate-700 flex-1 justify-center">
@@ -129,7 +129,7 @@ export default function PatientDetail() {
             </div>
             <h4 className="font-bold text-slate-900 dark:text-slate-100 text-lg text-center line-clamp-1 px-4">{patient.nombre_completo}</h4>
           </div>
-          
+
           <div className="p-4 grid grid-cols-2 gap-4 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800">
             <div className="space-y-1">
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Contacto</p>
@@ -145,11 +145,21 @@ export default function PatientDetail() {
                   <Medal className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                   <div className="min-w-0">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
-                      Afiliado Militar
+                      Afiliación Militar
                     </p>
                     <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">
-                      {patient.tipo_afiliacion}
-                      {patient.titular_nombre ? ` · Titular: ${patient.titular_nombre}` : ''}
+                      {patient.tipo_afiliacion === 'Titular' ? (
+                        // Caso 1: El propio paciente es el militar
+                        <span className="text-amber-700 dark:text-amber-400 font-extrabold">
+                          Personal Militar Titular
+                        </span>
+                      ) : (
+                        // Caso 2: Es un familiar
+                        <>
+                          {patient.tipo_afiliacion}
+                          {patient.titular_nombre ? ` · Titular: ${patient.titular_nombre}` : ''}
+                        </>
+                      )}
                     </p>
                   </div>
                 </div>
@@ -177,34 +187,34 @@ export default function PatientDetail() {
 
         {/* Panel 2: Alerta Médica (Alergias / Tratamientos) */}
         <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 h-full flex flex-col">
-              <h5 className="font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2 border-b border-slate-100 dark:border-slate-700 pb-3 uppercase text-xs tracking-widest">
-                <AlertCircle className="w-4 h-4 text-red-500" />
-                Datos Importantes
-              </h5>
-              <div className="space-y-5 flex-1">
-                {(!patient.alergias && !patient.tratamiento_actual) ? (
-                  <p className="font-bold text-slate-800 dark:text-slate-200 text-sm leading-relaxed">
-                    No se han registrado datos importantes para este paciente todavía.
-                  </p>
-                ) : (
-                  <>
-                    {patient.alergias && (
-                      <div className="space-y-1">
-                        <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Alergias</p>
-                        {renderField(patient.alergias, 'font-bold text-slate-800 dark:text-slate-200 text-sm leading-relaxed')}
-                      </div>
-                    )}
-                    {patient.tratamiento_actual && (
-                      <div className="space-y-1">
-                        <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Tratamiento Actual</p>
-                        {renderField(patient.tratamiento_actual, 'font-bold text-slate-800 dark:text-slate-200 text-sm leading-relaxed')}
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 h-full flex flex-col">
+            <h5 className="font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2 border-b border-slate-100 dark:border-slate-700 pb-3 uppercase text-xs tracking-widest">
+              <AlertCircle className="w-4 h-4 text-red-500" />
+              Datos Importantes
+            </h5>
+            <div className="space-y-5 flex-1">
+              {(!patient.alergias && !patient.tratamiento_actual) ? (
+                <p className="font-bold text-slate-800 dark:text-slate-200 text-sm leading-relaxed">
+                  No se han registrado datos importantes para este paciente todavía.
+                </p>
+              ) : (
+                <>
+                  {patient.alergias && (
+                    <div className="space-y-1">
+                      <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Alergias</p>
+                      {renderField(patient.alergias, 'font-bold text-slate-800 dark:text-slate-200 text-sm leading-relaxed')}
+                    </div>
+                  )}
+                  {patient.tratamiento_actual && (
+                    <div className="space-y-1">
+                      <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Tratamiento Actual</p>
+                      {renderField(patient.tratamiento_actual, 'font-bold text-slate-800 dark:text-slate-200 text-sm leading-relaxed')}
+                    </div>
+                  )}
+                </>
+              )}
             </div>
+          </div>
         </div>
 
         {/* Panel 3: Antecedentes Médicos */}
@@ -255,15 +265,15 @@ export default function PatientDetail() {
                 <div className="absolute left-0 top-1 w-10 h-10 rounded-xl bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 flex items-center justify-center z-10 group-hover:border-primary/30 group-hover:bg-primary/5 transition-all shadow-sm">
                   <Clock className="w-5 h-5 text-slate-400 group-hover:text-primary transition-colors" />
                 </div>
-                
+
                 <div className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl p-6 hover:border-primary/20 hover:shadow-md transition-all">
                   <div className="flex items-start justify-between mb-4">
                     <div className="space-y-1">
                       <p className="text-sm font-bold text-primary">
-                        {new Date(item.fecha_consulta).toLocaleDateString('es-ES', { 
-                          day: 'numeric', 
-                          month: 'long', 
-                          year: 'numeric' 
+                        {new Date(item.fecha_consulta).toLocaleDateString('es-ES', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric'
                         })}
                       </p>
                       <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
@@ -271,14 +281,14 @@ export default function PatientDetail() {
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <button 
+                      <button
                         onClick={() => setEditingHistory(item)}
                         className="p-2 text-slate-400 hover:cursor-pointer hover:text-primary hover:bg-primary/5 rounded-lg transition-all"
                         title="Editar historia"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
-                      <button 
+                      <button
                         onClick={() => setDeletingHistory(item)}
                         className="p-2 text-slate-400 dark:text-slate-500 hover:cursor-pointer hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all"
                         title="Eliminar historia"
@@ -355,20 +365,20 @@ export default function PatientDetail() {
       </div>
 
       {/* Modales */}
-      <AddHistoryModal 
-        isOpen={isAddHistoryOpen} 
-        onClose={() => setIsAddHistoryOpen(false)} 
-        patientId={id!} 
+      <AddHistoryModal
+        isOpen={isAddHistoryOpen}
+        onClose={() => setIsAddHistoryOpen(false)}
+        patientId={id!}
       />
-      
-      <EditHistoryModal 
+
+      <EditHistoryModal
         isOpen={!!editingHistory}
         onClose={() => setEditingHistory(null)}
         patientId={id!}
         historyItem={editingHistory}
       />
 
-      <EditPatientModal 
+      <EditPatientModal
         isOpen={isEditPatientOpen}
         onClose={() => setIsEditPatientOpen(false)}
         patient={patient}
@@ -390,7 +400,7 @@ export default function PatientDetail() {
                 <h3 className="font-bold text-slate-900">{selectedDoc.nombre}</h3>
               </div>
               <div className="flex items-center gap-2">
-                <button 
+                <button
                   onClick={handleDownload}
                   disabled={isDownloading}
                   className="flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-bold rounded-xl hover:cursor-pointer hover:bg-primary/90 transition-all disabled:opacity-50"
@@ -398,7 +408,7 @@ export default function PatientDetail() {
                   {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                   Descargar
                 </button>
-                <button 
+                <button
                   onClick={() => setSelectedDoc(null)}
                   className="p-2 hover:cursor-pointer hover:bg-slate-200 rounded-full transition-colors"
                 >
@@ -408,16 +418,16 @@ export default function PatientDetail() {
             </div>
             <div className="flex-1 bg-slate-200 overflow-hidden relative">
               {selectedDoc.url.toLowerCase().endsWith('.pdf') ? (
-                <iframe 
-                  src={`${selectedDoc.url}#toolbar=0`} 
+                <iframe
+                  src={`${selectedDoc.url}#toolbar=0`}
                   className="w-full h-full border-none"
                   title="Visor PDF"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center p-8 overflow-auto">
-                  <img 
-                    src={selectedDoc.url} 
-                    alt={selectedDoc.nombre} 
+                  <img
+                    src={selectedDoc.url}
+                    alt={selectedDoc.nombre}
                     className="max-w-full max-h-full object-contain shadow-lg rounded-lg"
                   />
                 </div>

@@ -14,23 +14,36 @@ import {
   withMilitaryAffiliationValidation,
 } from '@/lib/patientSchema'
 
+// 1. Esquema actualizado: Solo el nombre es obligatorio, la edad se valida como en la creación
 const patientSchema = withMilitaryAffiliationValidation(
   z.object({
     nombre_completo: z.string().min(3, 'El nombre debe tener al menos 3 caracteres'),
-    cedula: z.string().min(5, 'Cédula inválida'),
-    fecha_nacimiento: z.string().refine((date) => !isNaN(Date.parse(date)), {
-      message: 'Fecha de nacimiento inválida',
-    }),
-    genero: z.enum(['Masculino', 'Femenino', 'Otro']),
-    telefono: z.string().min(7, 'Teléfono inválido'),
+    cedula: z.string().optional().or(z.literal('')),
+    fecha_nacimiento: z.string().optional().or(z.literal('')),
+
+    edad: z
+      .string()
+      .optional()
+      .or(z.literal(''))
+      .refine(
+        (val) => {
+          if (!val) return true;
+          const num = Number(val);
+          return !isNaN(num) && num >= 0 && num <= 120;
+        },
+        { message: 'La edad debe ser un número entre 0 y 120' }
+      ),
+
+    genero: z.enum(['Masculino', 'Femenino']).optional(),
+    telefono: z.string().optional().or(z.literal('')),
     email: z.string().email('Email inválido').optional().or(z.literal('')),
-    seguro_compania: z.string().optional(),
-    seguro_poliza: z.string().optional(),
-    contacto_emergencia_nombre: z.string().optional(),
-    contacto_emergencia_telefono: z.string().optional(),
-    alergias: z.string().optional(),
-    antecedentes: z.string().optional(),
-    tratamiento_actual: z.string().optional(),
+    seguro_compania: z.string().optional().or(z.literal('')),
+    seguro_poliza: z.string().optional().or(z.literal('')),
+    contacto_emergencia_nombre: z.string().optional().or(z.literal('')),
+    contacto_emergencia_telefono: z.string().optional().or(z.literal('')),
+    alergias: z.string().optional().or(z.literal('')),
+    antecedentes: z.string().optional().or(z.literal('')),
+    tratamiento_actual: z.string().optional().or(z.literal('')),
     ...affiliationFields,
   })
 )
@@ -52,6 +65,7 @@ export default function EditPatientModal({ isOpen, onClose, patient }: EditPatie
     reset,
     control,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<PatientForm>({
     resolver: zodResolver(patientSchema),
@@ -59,22 +73,24 @@ export default function EditPatientModal({ isOpen, onClose, patient }: EditPatie
 
   const esAfiliado = watch('es_afiliado')
 
+  // 2. Controlar la carga de datos: Parsear nulos a strings vacíos para el frontend
   useEffect(() => {
     if (patient) {
       reset({
         nombre_completo: patient.nombre_completo,
-        cedula: patient.cedula,
-        fecha_nacimiento: new Date(patient.fecha_nacimiento).toISOString().split('T')[0],
-        genero: patient.genero as PatientForm['genero'],
-        telefono: patient.telefono,
-        email: patient.email,
-        seguro_compania: patient.seguro_compania,
-        seguro_poliza: patient.seguro_poliza,
-        contacto_emergencia_nombre: patient.contacto_emergencia_nombre,
-        contacto_emergencia_telefono: patient.contacto_emergencia_telefono,
-        alergias: patient.alergias,
-        antecedentes: patient.antecedentes,
-        tratamiento_actual: patient.tratamiento_actual,
+        cedula: patient.cedula || '',
+        fecha_nacimiento: patient.fecha_nacimiento ? new Date(patient.fecha_nacimiento).toISOString().split('T')[0] : '',
+        edad: patient.edad !== undefined && patient.edad !== null ? String(patient.edad) : '',
+        genero: (patient.genero as PatientForm['genero']) || 'Masculino',
+        telefono: patient.telefono || '',
+        email: patient.email || '',
+        seguro_compania: patient.seguro_compania || '',
+        seguro_poliza: patient.seguro_poliza || '',
+        contacto_emergencia_nombre: patient.contacto_emergencia_nombre || '',
+        contacto_emergencia_telefono: patient.contacto_emergencia_telefono || '',
+        alergias: patient.alergias || '',
+        antecedentes: patient.antecedentes || '',
+        tratamiento_actual: patient.tratamiento_actual || '',
         es_afiliado: patient.es_afiliado ?? false,
         tipo_afiliacion:
           patient.es_afiliado && patient.tipo_afiliacion !== TIPO_AFILIACION_NINGUNA
@@ -87,6 +103,7 @@ export default function EditPatientModal({ isOpen, onClose, patient }: EditPatie
 
   if (!isOpen) return null
 
+  // 3. Preparar los datos antes de actualizar
   const onSubmit = (data: PatientForm) => {
     const affiliation = mapAffiliationPayload(data)
 
@@ -94,7 +111,9 @@ export default function EditPatientModal({ isOpen, onClose, patient }: EditPatie
       ...patient,
       ...data,
       ...affiliation,
-      fecha_nacimiento: new Date(data.fecha_nacimiento).toISOString(),
+      // Manejamos las fechas y la edad transformando de nuevo a sus tipos nativos o null
+      fecha_nacimiento: data.fecha_nacimiento && data.fecha_nacimiento !== '' ? new Date(data.fecha_nacimiento).toISOString() : null,
+      edad: data.edad && data.edad !== '' ? Number(data.edad) : null,
       titular_nombre: data.es_afiliado ? affiliation.titular_nombre : null,
     }
 
@@ -140,9 +159,11 @@ export default function EditPatientModal({ isOpen, onClose, patient }: EditPatie
                 <input {...register('cedula')} className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none" />
               </div>
 
+              {/* 4. Campo de Edad reemplazando a Fecha de Nacimiento */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Fecha de Nacimiento</label>
-                <input {...register('fecha_nacimiento')} type="date" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none" />
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Edad</label>
+                <input {...register('edad')} type="number" min="0" max="120" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none" placeholder="Ej: 45" />
+                {errors.edad && <p className="text-xs text-red-500 mt-1">{errors.edad.message}</p>}
               </div>
 
               <div>
@@ -150,7 +171,6 @@ export default function EditPatientModal({ isOpen, onClose, patient }: EditPatie
                 <select {...register('genero')} className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none">
                   <option value="Masculino">Masculino</option>
                   <option value="Femenino">Femenino</option>
-                  <option value="Otro">Otro</option>
                 </select>
               </div>
 
@@ -164,7 +184,7 @@ export default function EditPatientModal({ isOpen, onClose, patient }: EditPatie
                 <input {...register('email')} type="email" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none" />
               </div>
 
-              <MilitaryAffiliationFields control={control as any} errors={errors} esAfiliado={!!esAfiliado} />
+              <MilitaryAffiliationFields control={control as any} errors={errors} esAfiliado={!!esAfiliado} setValue={setValue} />
             </div>
           </div>
 

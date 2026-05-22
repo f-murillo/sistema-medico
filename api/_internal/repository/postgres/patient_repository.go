@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -27,17 +28,16 @@ func NewPatientRepository(ctx context.Context) (repository.PatientRepository, er
 }
 
 func (r *patientRepo) ListByMedico(ctx context.Context, medicoID uuid.UUID) ([]models.Paciente, error) {
-	query := `SELECT id, medico_id, nombre_completo, COALESCE(cedula, ''), fecha_nacimiento, COALESCE(genero, ''), 
-              COALESCE(telefono, ''), COALESCE(email, ''), COALESCE(seguro_compania, ''), COALESCE(seguro_poliza, ''), 
-              COALESCE(contacto_emergencia_nombre, ''), COALESCE(contacto_emergencia_telefono, ''), 
-              COALESCE(alergias, ''), COALESCE(antecedentes, ''), COALESCE(tratamiento_actual, ''), 
-              COALESCE(es_afiliado, false), COALESCE(tipo_afiliacion, 'Ninguna'), titular_nombre,
-              created_at, updated_at 
-              FROM pacientes WHERE medico_id = $1`
+	// Query limpio sin COALESCE grasosos gracias a los punteros
+	query := `SELECT id, medico_id, nombre_completo, cedula, fecha_nacimiento, edad, genero, 
+              telefono, email, seguro_compania, seguro_poliza, contacto_emergencia_nombre, 
+              contacto_emergencia_telefono, alergias, antecedentes, tratamiento_actual, 
+              es_afiliado, tipo_afiliacion, titular_nombre, created_at, updated_at 
+              FROM pacientes WHERE medico_id = $1 ORDER BY nombre_completo ASC`
 
 	rows, err := r.pool.Query(ctx, query, medicoID)
 	if err != nil {
-		log.Printf("❌ REPO ERROR: Error ejecutando query ListByMedico: %v", err)
+		log.Printf("REPO ERROR: Error ejecutando query ListByMedico: %v", err)
 		return nil, fmt.Errorf("error listando pacientes: %w", err)
 	}
 	defer rows.Close()
@@ -46,87 +46,97 @@ func (r *patientRepo) ListByMedico(ctx context.Context, medicoID uuid.UUID) ([]m
 	for rows.Next() {
 		var p models.Paciente
 		err := rows.Scan(
-			&p.ID, &p.MedicoID, &p.NombreCompleto, &p.Cedula, &p.FechaNacimiento, &p.Genero, &p.Telefono, &p.Email,
-			&p.SeguroCompania, &p.SeguroPoliza, &p.ContactoEmergenciaNombre, &p.ContactoEmergenciaTelefono,
-			&p.Alergias, &p.Antecedentes, &p.TratamientoActual,
-			&p.EsAfiliado, &p.TipoAfiliacion, &p.TitularNombre,
-			&p.CreatedAt, &p.UpdatedAt,
+			&p.ID, &p.MedicoID, &p.NombreCompleto, &p.Cedula, &p.FechaNacimiento, &p.Edad, &p.Genero,
+			&p.Telefono, &p.Email, &p.SeguroCompania, &p.SeguroPoliza, &p.ContactoEmergenciaNombre,
+			&p.ContactoEmergenciaTelefono, &p.Alergias, &p.Antecedentes, &p.TratamientoActual,
+			&p.EsAfiliado, &p.TipoAfiliacion, &p.TitularNombre, &p.CreatedAt, &p.UpdatedAt,
 		)
 		if err != nil {
-			log.Printf("❌ REPO ERROR: Error escaneando paciente: %v", err)
+			log.Printf("REPO ERROR: Error escaneando paciente: %v", err)
 			return nil, fmt.Errorf("error escaneando paciente: %w", err)
 		}
 		pacientes = append(pacientes, p)
 	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
 	return pacientes, nil
 }
 
 func (r *patientRepo) Create(ctx context.Context, p *models.Paciente) error {
-	query := `INSERT INTO pacientes (medico_id, nombre_completo, cedula, fecha_nacimiento, genero, telefono, email, 
-              seguro_compania, seguro_poliza, contacto_emergencia_nombre, contacto_emergencia_telefono,
-              alergias, antecedentes, tratamiento_actual, es_afiliado, tipo_afiliacion, titular_nombre)
-              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
-              RETURNING id, created_at, updated_at`
 
-	err := r.pool.QueryRow(ctx, query,
-		p.MedicoID, p.NombreCompleto, p.Cedula, p.FechaNacimiento, p.Genero, p.Telefono, p.Email,
-		p.SeguroCompania, p.SeguroPoliza, p.ContactoEmergenciaNombre, p.ContactoEmergenciaTelefono,
-		p.Alergias, p.Antecedentes, p.TratamientoActual,
-		p.EsAfiliado, p.TipoAfiliacion, p.TitularNombre,
-	).Scan(&p.ID, &p.CreatedAt, &p.UpdatedAt)
+	p.CreatedAt = time.Now()
+	p.UpdatedAt = time.Now()
 
+	query := `INSERT INTO pacientes (
+		id, medico_id, nombre_completo, cedula, fecha_nacimiento, edad, genero, 
+		telefono, email, seguro_compania, seguro_poliza, contacto_emergencia_nombre, 
+		contacto_emergencia_telefono, alergias, antecedentes, tratamiento_actual, 
+		es_afiliado, tipo_afiliacion, titular_nombre, created_at, updated_at
+	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`
+
+	_, err := r.pool.Exec(ctx, query,
+		p.ID, p.MedicoID, p.NombreCompleto, p.Cedula, p.FechaNacimiento, p.Edad, p.Genero,
+		p.Telefono, p.Email, p.SeguroCompania, p.SeguroPoliza, p.ContactoEmergenciaNombre,
+		p.ContactoEmergenciaTelefono, p.Alergias, p.Antecedentes, p.TratamientoActual,
+		p.EsAfiliado, p.TipoAfiliacion, p.TitularNombre, p.CreatedAt, p.UpdatedAt,
+	)
 	if err != nil {
-		return fmt.Errorf("error creando paciente: %w", err)
+		return fmt.Errorf("error insertando paciente en base de datos: %w", err)
 	}
+
 	return nil
 }
 
 func (r *patientRepo) GetByID(ctx context.Context, id uuid.UUID) (*models.Paciente, error) {
-	query := `SELECT id, medico_id, nombre_completo, COALESCE(cedula, ''), fecha_nacimiento, COALESCE(genero, ''), 
-              COALESCE(telefono, ''), COALESCE(email, ''), COALESCE(seguro_compania, ''), COALESCE(seguro_poliza, ''), 
-              COALESCE(contacto_emergencia_nombre, ''), COALESCE(contacto_emergencia_telefono, ''), 
-              COALESCE(alergias, ''), COALESCE(antecedentes, ''), COALESCE(tratamiento_actual, ''), 
-              COALESCE(es_afiliado, false), COALESCE(tipo_afiliacion, 'Ninguna'), titular_nombre,
-              created_at, updated_at 
+	query := `SELECT id, medico_id, nombre_completo, cedula, fecha_nacimiento, edad, genero, 
+              telefono, email, seguro_compania, seguro_poliza, contacto_emergencia_nombre, 
+              contacto_emergencia_telefono, alergias, antecedentes, tratamiento_actual, 
+              es_afiliado, tipo_afiliacion, titular_nombre, created_at, updated_at 
               FROM pacientes WHERE id = $1`
 
 	var p models.Paciente
 	err := r.pool.QueryRow(ctx, query, id).Scan(
-		&p.ID, &p.MedicoID, &p.NombreCompleto, &p.Cedula, &p.FechaNacimiento, &p.Genero, &p.Telefono, &p.Email,
-		&p.SeguroCompania, &p.SeguroPoliza, &p.ContactoEmergenciaNombre, &p.ContactoEmergenciaTelefono,
-		&p.Alergias, &p.Antecedentes, &p.TratamientoActual,
-		&p.EsAfiliado, &p.TipoAfiliacion, &p.TitularNombre,
-		&p.CreatedAt, &p.UpdatedAt,
+		&p.ID, &p.MedicoID, &p.NombreCompleto, &p.Cedula, &p.FechaNacimiento, &p.Edad, &p.Genero,
+		&p.Telefono, &p.Email, &p.SeguroCompania, &p.SeguroPoliza, &p.ContactoEmergenciaNombre,
+		&p.ContactoEmergenciaTelefono, &p.Alergias, &p.Antecedentes, &p.TratamientoActual,
+		&p.EsAfiliado, &p.TipoAfiliacion, &p.TitularNombre, &p.CreatedAt, &p.UpdatedAt,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error obteniendo paciente: %w", err)
 	}
+
 	return &p, nil
 }
 
 func (r *patientRepo) Update(ctx context.Context, p *models.Paciente) error {
-	query := `UPDATE pacientes 
-              SET nombre_completo = $1, cedula = $2, fecha_nacimiento = $3, genero = $4, telefono = $5, email = $6, 
-                  seguro_compania = $7, seguro_poliza = $8, contacto_emergencia_nombre = $9, 
-                  contacto_emergencia_telefono = $10, alergias = $11, antecedentes = $12, tratamiento_actual = $13,
-                  es_afiliado = $14, tipo_afiliacion = $15, titular_nombre = $16,
-                  updated_at = NOW() 
-              WHERE id = $17 AND medico_id = $18`
-	
-	result, err := r.pool.Exec(ctx, query, 
-		p.NombreCompleto, p.Cedula, p.FechaNacimiento, p.Genero, p.Telefono, p.Email, 
-		p.SeguroCompania, p.SeguroPoliza, p.ContactoEmergenciaNombre, 
-		p.ContactoEmergenciaTelefono, p.Alergias, p.Antecedentes, p.TratamientoActual,
-		p.EsAfiliado, p.TipoAfiliacion, p.TitularNombre,
+	p.UpdatedAt = time.Now()
+	query := `UPDATE pacientes SET 
+		nombre_completo = $1, cedula = $2, fecha_nacimiento = $3, edad = $4, genero = $5, 
+		telefono = $6, email = $7, seguro_compania = $8, seguro_poliza = $9, 
+		contacto_emergencia_nombre = $10, contacto_emergencia_telefono = $11, 
+		alergias = $12, antecedentes = $13, tratamiento_actual = $14, 
+		es_afiliado = $15, tipo_afiliacion = $16, titular_nombre = $17, updated_at = $18
+		WHERE id = $19 AND medico_id = $20`
+
+	cmd, err := r.pool.Exec(ctx, query,
+		p.NombreCompleto, p.Cedula, p.FechaNacimiento, p.Edad, p.Genero,
+		p.Telefono, p.Email, p.SeguroCompania, p.SeguroPoliza,
+		p.ContactoEmergenciaNombre, p.ContactoEmergenciaTelefono,
+		p.Alergias, p.Antecedentes, p.TratamientoActual,
+		p.EsAfiliado, p.TipoAfiliacion, p.TitularNombre, p.UpdatedAt,
 		p.ID, p.MedicoID,
 	)
 	if err != nil {
 		return fmt.Errorf("error actualizando paciente: %w", err)
 	}
 
-	if result.RowsAffected() == 0 {
-		return fmt.Errorf("no se encontró el paciente o no tiene permisos")
+	if cmd.RowsAffected() == 0 {
+		return fmt.Errorf("paciente no encontrado o no pertenece al médico")
 	}
+
 	return nil
 }
 
@@ -156,7 +166,7 @@ func (r *patientRepo) ListHistoryByPatient(ctx context.Context, pacienteID uuid.
 		FROM historias_clinicas h 
 		WHERE h.paciente_id = $1 
 		ORDER BY h.fecha_consulta DESC`
-	
+
 	rows, err := r.pool.Query(ctx, query, pacienteID)
 	if err != nil {
 		return nil, fmt.Errorf("error listando historias clínicas: %w", err)
@@ -168,14 +178,14 @@ func (r *patientRepo) ListHistoryByPatient(ctx context.Context, pacienteID uuid.
 		var h models.HistoriaClinica
 		var documentosJSON []byte
 		err := rows.Scan(
-			&h.ID, &h.PacienteID, &h.MedicoID, &h.FechaConsulta, &h.MotivoConsulta, 
+			&h.ID, &h.PacienteID, &h.MedicoID, &h.FechaConsulta, &h.MotivoConsulta,
 			&h.Diagnostico, &h.Tratamiento, &h.NotasGenerales, &h.Metadatos, &h.CreatedAt,
 			&documentosJSON,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error escaneando historia clínica: %w", err)
 		}
-		
+
 		// Decodificamos los documentos del JSON al campo Metadatos temporalmente o podrías añadir un campo al modelo
 		// Para mantenerlo simple y pragmático, lo meteremos en Metadatos bajo la llave "documentos"
 		if h.Metadatos == nil {
@@ -211,8 +221,8 @@ func (r *patientRepo) UpdateHistory(ctx context.Context, h *models.HistoriaClini
 	query := `UPDATE historias_clinicas 
               SET motivo_consulta = $1, diagnostico = $2, tratamiento = $3, notas_generales = $4, metadatos = $5::jsonb 
               WHERE id = $6 AND medico_id = $7`
-	
-	result, err := tx.Exec(ctx, query, 
+
+	result, err := tx.Exec(ctx, query,
 		h.MotivoConsulta, h.Diagnostico, h.Tratamiento, h.NotasGenerales, string(metadatosJSON), h.ID, h.MedicoID,
 	)
 	if err != nil {
@@ -234,7 +244,7 @@ func (r *patientRepo) UpdateHistory(ctx context.Context, h *models.HistoriaClini
 	// 3. Insertar nuevos documentos
 	for _, path := range newPaths {
 		fileName := path[strings.LastIndex(path, "/")+1:]
-		_, err = tx.Exec(ctx, 
+		_, err = tx.Exec(ctx,
 			"INSERT INTO documentos_paciente (paciente_id, historia_id, storage_path, nombre) VALUES ($1, $2, $3, $4)",
 			h.PacienteID, h.ID, path, fileName,
 		)

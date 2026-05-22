@@ -10,3 +10,11 @@
 *.dll
 *.so
 *.dylib
+
+# Archivos de texto
+*.txt
+
+# Servidor local para pruebas
+api/main.go
+# Para probar algo pero no lo quiero borrar xd
+api/patients/utils.go

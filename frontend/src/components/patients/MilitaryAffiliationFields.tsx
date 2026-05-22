@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react'
-import { Controller, type Control, type FieldErrors, type FieldValues } from 'react-hook-form'
+import { useEffect, type ReactNode } from 'react'
+import { Controller, useWatch, type Control, type FieldErrors, type FieldValues, type UseFormSetValue } from 'react-hook-form'
 import { Medal, User } from 'lucide-react'
 import { Select } from '@/components/ui/select'
 import { TIPOS_AFILIACION_FAMILIAR } from '@/lib/patientSchema'
@@ -9,6 +9,7 @@ interface MilitaryAffiliationFieldsProps {
   control: Control<any> | Control<FieldValues>
   errors: FieldErrors
   esAfiliado: boolean
+  setValue: UseFormSetValue<any> // <-- Agregamos setValue para poder forzar el valor en el formulario
 }
 
 function AnimatedCollapse({
@@ -22,9 +23,8 @@ function AnimatedCollapse({
 }) {
   return (
     <div
-      className={`grid transition-all duration-300 ease-in-out ${
-        show ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
-      } ${className ?? ''}`}
+      className={`grid transition-all duration-300 ease-in-out ${show ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+        } ${className ?? ''}`}
     >
       <div className="min-h-0 overflow-hidden">{children}</div>
     </div>
@@ -35,7 +35,23 @@ export default function MilitaryAffiliationFields({
   control,
   errors,
   esAfiliado,
+  setValue, // <-- Lo recibimos aquí
 }: MilitaryAffiliationFieldsProps) {
+
+  // Observamos tanto el tipo de afiliación como el nombre completo del paciente en tiempo real
+  const tipoAfiliacion = useWatch({ control, name: 'tipo_afiliacion' })
+  const nombreCompletoPaciente = useWatch({ control, name: 'nombre_completo' })
+
+  const esElPropioTitular = tipoAfiliacion === 'Titular'
+
+  // EFECTO DE SINCRONIZACIÓN AUTOMÁTICA
+  useEffect(() => {
+    if (esElPropioTitular) {
+      // Si es el titular, copiamos automáticamente el nombre completo del paciente en tiempo real
+      setValue('titular_nombre', nombreCompletoPaciente || '')
+    }
+  }, [esElPropioTitular, nombreCompletoPaciente, setValue])
+
   return (
     <div className="md:col-span-2 space-y-4 pt-2 border-t border-slate-100 dark:border-slate-700">
       <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-2">
@@ -61,14 +77,12 @@ export default function MilitaryAffiliationFields({
               role="switch"
               aria-checked={field.value}
               onClick={() => field.onChange(!field.value)}
-              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 ${
-                field.value ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-600'
-              }`}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 ${field.value ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-600'
+                }`}
             >
               <span
-                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ${
-                  field.value ? 'translate-x-5' : 'translate-x-0'
-                }`}
+                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ${field.value ? 'translate-x-5' : 'translate-x-0'
+                  }`}
               />
             </button>
           </label>
@@ -115,13 +129,17 @@ export default function MilitaryAffiliationFields({
                 <input
                   {...field}
                   value={field.value ?? ''}
-                  className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500"
-                  placeholder="Ej: Cap. Juan Rodríguez"
+                  disabled={esElPropioTitular}
+                  className={`w-full pl-10 pr-4 py-2 border rounded-lg outline-none transition-all ${esElPropioTitular
+                      ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 cursor-not-allowed font-medium'
+                      : 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder-slate-400 dark:placeholder-slate-500'
+                    }`}
+                  placeholder={esElPropioTitular ? 'El paciente es el titular' : 'Ej: Cap. Juan Rodríguez'}
                 />
               )}
             />
           </div>
-          {errors.titular_nombre && (
+          {errors.titular_nombre && !esElPropioTitular && (
             <p className="text-xs text-red-500 mt-1">{String(errors.titular_nombre.message)}</p>
           )}
         </div>

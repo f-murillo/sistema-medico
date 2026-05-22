@@ -19,7 +19,7 @@ export default function ViewPatientModal({ isOpen, onClose, patient }: ViewPatie
         { label: 'Nombre Completo', value: patient.nombre_completo },
         { label: 'Cédula / ID', value: patient.cedula },
         { label: 'Género', value: patient.genero },
-        { label: 'Fecha de Nacimiento', value: new Date(patient.fecha_nacimiento).toLocaleDateString('es-ES', { timeZone: 'UTC', day: 'numeric', month: 'long', year: 'numeric' }) },
+        { label: 'Edad', value: patient.edad },
       ]
     },
     {
@@ -51,15 +51,15 @@ export default function ViewPatientModal({ isOpen, onClose, patient }: ViewPatie
     },
     ...(patient.es_afiliado
       ? [{
-          title: 'Afiliación Militar',
-          icon: Medal,
-          color: 'text-amber-600 dark:text-amber-400',
-          fields: [
-            { label: 'Estado', value: 'Afiliado Militar' },
-            { label: 'Parentesco', value: patient.tipo_afiliacion },
-            { label: 'Titular Militar', value: patient.titular_nombre || 'No registrado' },
-          ],
-        }]
+        title: 'Afiliación Militar',
+        icon: Medal,
+        color: 'text-amber-600 dark:text-amber-400',
+        fields: [
+          { label: 'Estado', value: 'Afiliado Militar' },
+          { label: 'Parentesco', value: patient.tipo_afiliacion },
+          { label: 'Titular Militar', value: patient.titular_nombre || 'No registrado' },
+        ],
+      }]
       : []),
   ]
 

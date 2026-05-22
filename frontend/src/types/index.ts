@@ -1,21 +1,22 @@
 export interface Paciente {
-  id: string
+  id?: string
   medico_id: string
   nombre_completo: string
-  cedula: string
-  fecha_nacimiento: string
-  genero: string
-  telefono: string
-  email: string
-  seguro_compania: string
-  seguro_poliza: string
-  contacto_emergencia_nombre: string
-  contacto_emergencia_telefono: string
-  alergias: string
-  antecedentes: string
-  tratamiento_actual: string
-  es_afiliado: boolean
-  tipo_afiliacion: string
+  cedula?: string
+  fecha_nacimiento?: string | null
+  edad?: number | null
+  genero?: string
+  telefono?: string
+  email?: string
+  seguro_compania?: string
+  seguro_poliza?: string
+  contacto_emergencia_nombre?: string
+  contacto_emergencia_telefono?: string
+  alergias?: string
+  antecedentes?: string
+  tratamiento_actual?: string
+  es_afiliado?: boolean
+  tipo_afiliacion?: string
   titular_nombre?: string | null
   created_at: string
   updated_at: string

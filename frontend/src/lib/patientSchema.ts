@@ -1,6 +1,7 @@
 import * as z from 'zod'
 
 export const TIPOS_AFILIACION_FAMILIAR = [
+  'Titular',
   'Padre/Madre',
   'Hijo/Hija',
   'Cónyuge/Concubino',
@@ -30,13 +31,15 @@ export function withMilitaryAffiliationValidation<T extends z.ZodObject<z.ZodRaw
         })
       }
 
-      const titular = (data.titular_nombre as string | undefined)?.trim() ?? ''
-      if (titular.length < 3) {
-        ctx.addIssue({
-          code: 'custom',
-          message: 'Ingrese el nombre completo del titular militar (mín. 3 caracteres)',
-          path: ['titular_nombre'],
-        })
+      if (tipo !== 'Titular') {
+        const titular = (data.titular_nombre as string | undefined)?.trim() ?? ''
+        if (titular.length < 3) {
+          ctx.addIssue({
+            code: 'custom',
+            message: 'Ingrese el nombre completo del titular militar (mín. 3 caracteres)',
+            path: ['titular_nombre'],
+          })
+        }
       }
     }
   })
