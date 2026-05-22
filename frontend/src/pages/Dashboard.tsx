@@ -52,15 +52,17 @@ export default function Dashboard() {
   const filteredPatients = patients.filter(p => {
     const searchTerm = patientSearch.toLowerCase()
 
-    // Extraemos las variables garantizando que siempre sean strings (incluso si son null/undefined)
+    // 1. Aseguramos el nombre (que siempre es string)
     const nombre = p.nombre_completo.toLowerCase()
-    const email = (p.email ?? '').toLowerCase()
-    const telefono = (p.telefono ?? '').toLowerCase()
+
+    // 2. Casteamos explícitamente a string antes de aplicar métodos
+    const emailStr = (p.email as string) || ''
+    const telefonoStr = (p.telefono as string) || ''
 
     return (
       nombre.includes(searchTerm) ||
-      email.includes(searchTerm) ||
-      telefono.includes(searchTerm)
+      emailStr.toLowerCase().includes(searchTerm) ||
+      telefonoStr.toLowerCase().includes(searchTerm)
     )
   })
 
@@ -225,7 +227,7 @@ export default function Dashboard() {
                           Ver Ficha
                         </Link>
                         <button
-                          onClick={() => handleDeletePatientClick(patient.id, patient.nombre_completo)}
+                          onClick={() => handleDeletePatientClick(patient.id!, patient.nombre_completo)}
                           className="p-1.5 text-slate-400 dark:text-slate-500 hover:cursor-pointer hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all"
                           title="Eliminar Paciente"
                         >
