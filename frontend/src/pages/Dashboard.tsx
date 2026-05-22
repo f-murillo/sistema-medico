@@ -51,8 +51,8 @@ export default function Dashboard() {
 
   const filteredPatients = patients.filter(p =>
     p.nombre_completo.toLowerCase().includes(patientSearch.toLowerCase()) ||
-    p.email?.toLowerCase().includes(patientSearch.toLowerCase()) ||
-    p.telefono?.toLowerCase().includes(patientSearch.toLowerCase())
+    (p.email || '').toLowerCase().includes(patientSearch.toLowerCase()) ||
+    (p.telefono || '').toLowerCase().includes(patientSearch.toLowerCase())
   )
 
   const stats = [
@@ -81,7 +81,7 @@ export default function Dashboard() {
           <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Panel de Resumen</h3>
           <p className="text-slate-500 dark:text-slate-400">Visualiza el estado actual de tus pacientes y agenda.</p>
         </div>
-        <button 
+        <button
           onClick={() => setIsAddModalOpen(true)}
           className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white font-semibold rounded-lg hover:cursor-pointer hover:bg-primary/90 transition-all shadow-md active:scale-95"
         >
@@ -90,9 +90,9 @@ export default function Dashboard() {
         </button>
       </div>
 
-      <AddPatientModal 
-        isOpen={isAddModalOpen} 
-        onClose={() => setIsAddModalOpen(false)} 
+      <AddPatientModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
       />
 
       <ConfirmModal
@@ -123,9 +123,9 @@ export default function Dashboard() {
 
           if (stat.link) {
             return (
-              <Link 
-                key={stat.name} 
-                to={stat.link} 
+              <Link
+                key={stat.name}
+                to={stat.link}
                 className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm animate-in fade-in duration-500 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-600 hover:-translate-y-0.5 transition-all hover:cursor-pointer block"
               >
                 {cardContent}
@@ -209,13 +209,13 @@ export default function Dashboard() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-3">
-                        <Link 
+                        <Link
                           to={`/pacientes/${patient.id}`}
                           className="flex items-center gap-1 text-sm font-bold text-primary hover:text-primary/80 transition-colors"
                         >
                           Ver Ficha
                         </Link>
-                        <button 
+                        <button
                           onClick={() => handleDeletePatientClick(patient.id, patient.nombre_completo)}
                           className="p-1.5 text-slate-400 dark:text-slate-500 hover:cursor-pointer hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all"
                           title="Eliminar Paciente"
