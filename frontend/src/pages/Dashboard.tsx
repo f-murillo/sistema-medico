@@ -49,11 +49,20 @@ export default function Dashboard() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [patientSearch, setPatientSearch] = useState('')
 
-  const filteredPatients = patients.filter(p =>
-    p.nombre_completo.toLowerCase().includes(patientSearch.toLowerCase()) ||
-    (p.email || '').toLowerCase().includes(patientSearch.toLowerCase()) ||
-    (p.telefono || '').toLowerCase().includes(patientSearch.toLowerCase())
-  )
+  const filteredPatients = patients.filter(p => {
+    const searchTerm = patientSearch.toLowerCase()
+
+    // Extraemos las variables garantizando que siempre sean strings (incluso si son null/undefined)
+    const nombre = p.nombre_completo.toLowerCase()
+    const email = (p.email ?? '').toLowerCase()
+    const telefono = (p.telefono ?? '').toLowerCase()
+
+    return (
+      nombre.includes(searchTerm) ||
+      email.includes(searchTerm) ||
+      telefono.includes(searchTerm)
+    )
+  })
 
   const stats = [
     { name: 'Pacientes Totales', value: patients.length.toString(), icon: Users, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/30' },
